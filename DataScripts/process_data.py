@@ -7,54 +7,9 @@ Created on Tue Mar 26 10:57:50 2024
 
 import matplotlib.pylab as plt
 from matplotlib.ticker import ScalarFormatter
-import numpy as np
-import pandas as pd
-import seaborn as sns
-sns.set_theme(style="whitegrid", palette="muted")
-
-import glob
-import afmformats
 from scipy.signal import savgol_filter
-
-# afmformats useful commands:
-	# afmformats.load_data(r"path")
-	# dslist[0].columns
-	# dslist[0]["force"]
-
-#%% Extract from file
-
-# to load all files from a folder
-allfilesinfolder = glob.glob(r'C:\Users\marie\Desktop\data\force-save-2023.06.09-*.jpk-force')
-
-# create empty list
-list = []
-
-# for loop to add the all the separate data to a list with size equal to the number of files
-for i in range(len(allfilesinfolder) - 1):
-	data = afmformats.load_data(allfilesinfolder[i]) # format of a dictionary
-	list.append(data) # add the dictionary to a list
-
-# to access the dictionaries in the list: list[0][0]["force"]
-
-# scale conversion constants
-xsc = 1 # none
-ysc = 1e9 # nN
-dsc = 1e6 # microns
-
-# create empty list for force and distance arrays
-d = []
-F = []
-t = []
-
-for j in range(len(allfilesinfolder) - 1):
-	# add arrays to their respective lists
-	d.append(list[j][0]["height (measured)"]*dsc)
-	F.append(list[j][0]["force"]*ysc)
-	t.append(list[j][0]['time'])
-	
-# to access an array in the list: d[0]
-# to access one element in the array in the list: d[0][0]
-
+import numpy as np
+import afmformats
 
 #%% Plotting:
 	

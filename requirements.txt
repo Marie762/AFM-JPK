@@ -1,6 +1,7 @@
-os
 matplotlib
 numpy
 pandas
 seaborn
+scipy
 afmformats
+nanite

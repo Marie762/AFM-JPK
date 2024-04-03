@@ -4,11 +4,23 @@ This project is a collection of Python scripts used for processing and analyzing
 
 ## Main Files
 
-- `extract data from jpk files.py`: This script is used to extract data from JPK force spectroscopy files. It uses the `afmformats` library to load the data and then processes it to extract the force and height measurements.
+- `mainScript.py`: the main script file
 
-- `extract data from qi jpk files.py`: This script is similar to the previous one but is specifically designed to work with QI mode JPK files. It also uses the `afmformats` library to load the data and then processes it to extract the force and height measurements.
+- `extractJPK.py`: file containing functions 
+    - `force()`: 
+    - (and hopefully soon also `QI()`)
 
-- `pffff.py`: This script is used for further processing and analysis of the data extracted from the JPK files. It includes functionality for finding the maximum force point, performing background subtraction, and applying a smoothing function.
+- `plot.py`: file containing functions
+    - `Fd(F, d, k, save='False')`: 
+    - `Ft(F, t, k, save='False')`:
+    - `Fdsubplot(F, d, k, F_sub)`:
+    - `Ftsubplot(F, t, k, F_sub)`:
+
+- `procBasic.py`: file containing functions
+    - `max(F)`: 
+    - `baselineSubtraction(F)`:
+    - `smoothingSG`: 
+
 
 ## Libraries Used
 

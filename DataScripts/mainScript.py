@@ -13,10 +13,18 @@ import pandas
 import afmformats
 
 import extractJPK
+import plot
+import procBasic
+
 
 # extract the data from all the jpk-force files in the directory 'Data'
 d, F, t = extractJPK.force()
 
-print(d)
-print(F)
-print(t)
+k = 0
+
+# test plotting
+#fig = plot.Fd(F, d, k)
+#fig = plot.Ft(F, t, k)
+#plt.show()
+
+# test basic processing
