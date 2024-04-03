@@ -22,6 +22,7 @@ sns.set_theme(style="whitegrid", palette="muted")
 
 
 # List all jpk-force files from the folder 'Data'
+
 allfilesinfolder = os.listdir(r'Data') 
 must_end_in = '.jpk-force'
 jpk_force_files = [os.path.join('Data',file) for file in allfilesinfolder if file[-len(must_end_in):] == must_end_in]
@@ -66,6 +67,7 @@ for k in range(len(jpk_force_files)):
 for k in range(len(jpk_force_files)):
     # create figure 'ax' and plot F against d (force-distance curve)
     fig, ax = plt.subplots()
-    ax.plot(d[k], F[k])
+    ax.plot(t[k], F[k])
     ax.set(xlabel='time (s)', ylabel='force (nN)', title='Force-time curve %i' % k)
     fig.savefig('Results\Ft_' + str(k) + '.png')
+    #plt.show()

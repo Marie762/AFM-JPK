@@ -74,13 +74,13 @@ for j in range(len(allfilesinfolder) - 1):
 # find maximum value in "force" array 
 k = 49
 
-m = max(F[k])
-n = np.argmax(F[k])
+max_value = max(F[k])
+max_element = np.argmax(F[k])
 
 # plots a red point at the max force value
 fig, ax = plt.subplots()
 ax.plot(d[k], F[k])
-ax.plot(d[k][n], F[k][n], 'ro')
+ax.plot(d[k][max_element], F[k][max_element], 'ro')
 
 ax.set(xlabel='height measured (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
 
@@ -153,8 +153,6 @@ for i in range(len(F[k])-1):
 
 dFdt.append(dFdt[len(F[k])-2])
 
-naam_van_mijn_vrouw = "Marie"
-print(f"Beeldschone code hoor {naam_van_mijn_vrouw} \n -Gert")
 
 # fig, ax = plt.subplots()
 # ax.plot(d[k], F_corr, 'r')
