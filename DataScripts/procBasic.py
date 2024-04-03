@@ -9,18 +9,24 @@ import numpy as np
 
 
 def max(F):
-    max_value = max(F)
-    max_element = np.argmax(F)
+    max_value = []
+    max_element = []
+    for k in range(len(F)):
+        max_value.append(max(F[k]))
+        max_element.append(np.argmax(F[k]))
     return max_value, max_element
 
 def baselineSubtraction(F):
-    for i in range(len(F)):
-        
-    o = min(F)
-    F_bS = F - o
+    F_bS = []
+    for k in range(len(F)):
+        min_value = min(F[k])
+        F_bS.append(F - min_value)
     return F_bS
 
 def smoothingSG(F, window_size, poly_order):
-    F_smoothSG = savgol_filter(F, window_size, poly_order) # smoothing Savitzky-Golay filter
+    F_smoothSG = []
+    for k in range(len(F)):
+        smoothed_data = savgol_filter(F[k], window_size, poly_order) # smoothing Savitzky-Golay filter
+        F_smoothSG.append(smoothed_data)
     return F_smoothSG
 

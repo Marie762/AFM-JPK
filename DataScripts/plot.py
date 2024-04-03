@@ -7,7 +7,7 @@ Created on Tue Apr 3 2024
 
 import matplotlib.pylab as plt
 
-def Fd(F,d,k, save='False'): # , save='False'
+def Fd(F,d, save='False'): # , save='False'
     for k in range(len(F)):
         fig, ax = plt.subplots()
         ax.plot(d[k], F[k])
@@ -16,7 +16,7 @@ def Fd(F,d,k, save='False'): # , save='False'
             fig.savefig('Results\Fd_' + str(k) + '.png')
     return fig
 
-def Ft(F,t,k, save='False'):
+def Ft(F,t, save='False'):
     for k in range(len(F)):
         fig, ax = plt.subplots()
         ax.plot(t[k], F[k])
@@ -25,7 +25,7 @@ def Ft(F,t,k, save='False'):
             fig.savefig('Results\Ft_' + str(k) + '.png')
     return fig
 
-def Fdsubplot(F, d, k, F_sub, colour='r', subplot_name='subplot', save='False'):
+def Fdsubplot(F, d, F_sub, colour='r', subplot_name='subplot', save='False'):
     for k in range(len(F)):
         fig, ax = plt.subplots()
         ax.plot(d[k], F[k])
@@ -35,7 +35,7 @@ def Fdsubplot(F, d, k, F_sub, colour='r', subplot_name='subplot', save='False'):
             fig.savefig('Results\Ft_' + subplot_name + '_' + str(k) + '.png')
     return fig
 
-def Ftsubplot(F, t, k, F_sub, colour='r', subplot_name='subplot', save='False'):
+def Ftsubplot(F, t, F_sub, colour='r', subplot_name='subplot', save='False'):
     for k in range(len(F)):
         fig, ax = plt.subplots()
         ax.plot(t[k], F[k])
