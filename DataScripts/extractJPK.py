@@ -22,7 +22,7 @@ def force():
     
     # for loop to extract and append all the separate jpk-force data to the list jpk_force_data_list (length equal to the number of files in folder 'Data')
     for i in range(len(jpk_force_files)):
-        data_extract = afmformats.load_data(jpk_force_files[i])[0]
+        data_extract = afmformats.load_data(jpk_force_files[i])#[0]
         jpk_force_data_list.append(data_extract)
 
     # to access specific data in jpk_force_data_list: 
@@ -40,8 +40,8 @@ def force():
 
     # add all the height, force, and time data to separate lists, with the element corresponding to the jpk_force_data_list
     for j in range(len(jpk_force_files)):
-        d.append(jpk_force_data_list[j]["height (measured)"]*dsc)
-        F.append(jpk_force_data_list[j]["force"]*ysc)
-        t.append(jpk_force_data_list[j]["time"])
+        d.append(jpk_force_data_list[j][0]["height (measured)"]*dsc)
+        F.append(jpk_force_data_list[j][0]["force"]*ysc)
+        t.append(jpk_force_data_list[j][0]["time"])
     
     return d, F, t

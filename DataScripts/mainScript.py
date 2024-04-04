@@ -19,21 +19,19 @@ import procBasic
 d, F, t = extractJPK.force()
 
 # test plotting
-fig = plot.Fd(F, d)
+#fig = plot.Fd(F, d)
 #fig = plot.Ft(F, t)
 #plt.show()
 
 # test basic processing
 max_value, max_element = procBasic.max(F)
-print(max_value, max_element)
-if F[max_element] == max_value:
-    print(True)
 
-#F_bS = procBasic.baselineSubtraction(F)
+F_bS = procBasic.baselineSubtraction(F)
+#fig = plot.Fdsubplot(F, d, F_bS, subplot_name='baseline subtraction')
 
-#window_size = 100
-#poly_order = 2
-#F_smoothSG = procBasic.smoothingSG(F, window_size, poly_order)
+window_size = 10
+poly_order = 2
+F_smoothSG = procBasic.smoothingSG(F_bS, window_size, poly_order)
 
-#fig = plot.Fdsubplot(F, d, F_bS)
-#plt.show()
+fig = plot.Fdsubplot(F_bS, d, F_smoothSG, subplot_name='S-G smoothing')
+plt.show()

@@ -12,15 +12,15 @@ def max(F):
     max_value = []
     max_element = []
     for k in range(len(F)):
-        max_value.append(max(F[k]))
+        max_value.append(np.ndarray.max(F[k]))
         max_element.append(np.argmax(F[k]))
     return max_value, max_element
 
 def baselineSubtraction(F):
     F_bS = []
     for k in range(len(F)):
-        min_value = min(F[k])
-        F_bS.append(F - min_value)
+        min_value = np.ndarray.min(F[k])
+        F_bS.append(F[k] - min_value)
     return F_bS
 
 def smoothingSG(F, window_size, poly_order):
