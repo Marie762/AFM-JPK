@@ -22,7 +22,7 @@ def force():
     
     # for loop to extract and append all the separate jpk-force data to the list jpk_force_data_list (length equal to the number of files in folder 'Data')
     for i in range(len(jpk_force_files)):
-        data_extract = afmformats.load_data(jpk_force_files[i])#[0]
+        data_extract = afmformats.load_data(jpk_force_files[i])
         jpk_force_data_list.append(data_extract)
 
     # to access specific data in jpk_force_data_list: 

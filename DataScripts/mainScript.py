@@ -34,4 +34,3 @@ poly_order = 2
 F_smoothSG = procBasic.smoothingSG(F_bS, window_size, poly_order)
 
 fig = plot.Fdsubplot(F_bS, d, F_smoothSG, subplot_name='S-G smoothing')
-plt.show()
