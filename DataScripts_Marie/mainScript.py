@@ -6,9 +6,6 @@ Created on Tue Apr 2 15:29:30 2024
 """
 
 import matplotlib.pylab as plt
-import numpy as np
-import pandas
-import afmformats
 
 import extractJPK
 import plot
@@ -16,15 +13,15 @@ import procBasic
 
 
 # extract the data from all the jpk-force files in the directory 'Data'
-d, F, t = extractJPK.force()
+d, F, t, segment, d_approach, F_approach, t_approach, d_inter, F_inter, t_inter, d_retract, F_retract, t_retract = extractJPK.force()
 
 # test plotting
-fig = plot.Fd(F, d)
-fig = plot.Ft(F, t)
+fig = plot.Fd(F, F_approach, d_approach, F_inter, d_inter, F_retract, d_retract)
+fig = plot.Ft(F, F_approach, t_approach, F_inter, t_inter, F_retract, t_retract)
 plt.show()
 
 # test basic processing
-#max_value, max_element = procBasic.max(F)
+#max_value, max_element = procBasic.max(F_approach)
 
 #F_bS = procBasic.baselineSubtraction(F)
 #fig = plot.Fdsubplot(F, d, F_bS, subplot_name='baseline subtraction')
