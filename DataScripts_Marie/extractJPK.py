@@ -6,6 +6,7 @@ Created on Tue Apr 2 15:19:50 2024
 """
 
 import os
+import numpy as np
 import afmformats
 
 def force():
@@ -82,15 +83,15 @@ def force():
                 local_t2_list.append(t[x][y])
         
         # append local arrays to corresponding list
-        d_approach.append(local_d0_list)
-        F_approach.append(local_F0_list)
-        t_approach.append(local_t0_list)
-        d_inter.append(local_d1_list)
-        F_inter.append(local_F1_list)
-        t_inter.append(local_t1_list)
-        d_retract.append(local_d2_list)
-        F_retract.append(local_F2_list)
-        t_retract.append(local_t2_list)
+        d_approach.append(np.array(local_d0_list))
+        F_approach.append(np.array(local_F0_list))
+        t_approach.append(np.array(local_t0_list))
+        d_inter.append(np.array(local_d1_list))
+        F_inter.append(np.array(local_F1_list))
+        t_inter.append(np.array(local_t1_list))
+        d_retract.append(np.array(local_d2_list))
+        F_retract.append(np.array(local_F2_list))
+        t_retract.append(np.array(local_t2_list))
         
     
     return d, F, t, segment, d_approach, F_approach, t_approach, d_inter, F_inter, t_inter, d_retract, F_retract, t_retract

@@ -19,12 +19,18 @@ jpk_qi_series_files = [os.path.join('Data_QI',file) for file in allfilesinfolder
 
 # create empty list to store all the data extracted from each jpk-force file
 jpk_qi_series_list = []
+
     
 # for loop to extract and append all the separate jpk-force data to the list jpk_force_data_list (length equal to the number of files in folder 'Data')
 for i in range(len(jpk_qi_series_files)):
 	data_extract = afmformats.load_data(jpk_qi_series_files[i])
-	jpk_qi_series_list.append(data_extract)
+	afmdata = afmformats.afm_data.AFMData(jpk_qi_series_files[i])
+	AFMGroup = afmformats.afm_group.AFMGroup.append(afmdata)
+#	jpk_qi_series_list.append(data_extract)
 
-print(jpk_qi_series_list[0][0].columns)
-F = jpk_qi_series_list[0][0]['force']
-print(len(F))
+#print(jpk_qi_series_list[0][0].columns)
+#F = jpk_qi_series_list[0][0]['force']
+#print(len(F))
+
+AFMQMap = afmformats.afm_qmap.AFMQMap(AFMGroup)
+#print(AFMQMap)
