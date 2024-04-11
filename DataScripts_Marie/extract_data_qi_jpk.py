@@ -11,6 +11,9 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import afmformats
 import nanite
+import seaborn as sns
+import pandas as pd
+
 
 
 
@@ -27,33 +30,20 @@ jpk_qi_series_list = []
 group = afmformats.AFMGroup("Data_QI\qi_Katerina_500nN_body_great training_150nm_pt40-data-2020.11.18-16.12.55.813-cropped-cropped.jpk-qi-data")
 
 qmap = afmformats.afm_qmap.AFMQMap(group)
+#print(qmap)
 
-print(qmap.features)
 
-plot_qmap = qmap.get_qmap("data: height base point")
+plot_qmap1 = qmap.get_qmap("data: height base point")
+#print(plot_qmap1)
 
-viridis = cm.get_cmap('viridis', 256)
-print(viridis)
-newcolors = viridis(np.linspace(0, 1, 256))
-print(newcolors)
-pink = np.array([248/256, 24/256, 148/256, 1])
-print(pink)
-newcolors[:25, :] = pink
-print(newcolors)
-newcmp = ListedColormap(newcolors)
-print(newcmp)
+plot_qmap2 = qmap.get_qmap("data: piezo range")
+#print(plot_qmap2)
 
-def plot_examples(cms):
-    """
-    helper function to plot two colormaps
-    """
-    np.random.seed(19680801)
-    data = np.random.randn(30, 30)
+plot_qmap3 = qmap.get_qmap("data: scan order")
+#print(plot_qmap3)
 
-    fig, axs = plt.subplots(1, 2, figsize=(6, 3), constrained_layout=True)
-    for [ax, cmap] in zip(axs, cms):
-        psm = ax.pcolormesh(data, cmap=cmap, rasterized=True, vmin=-4, vmax=4)
-        fig.colorbar(psm, ax=ax)
-    plt.show()
-
-plot_examples([viridis, newcmp])
+#df = np.random.randn(10, 10)
+#sns.heatmap(plot_qmap1[2])
+sns.heatmap(plot_qmap1[2])
+#sns.heatmap(plot_qmap3[2])
+plt.show()
