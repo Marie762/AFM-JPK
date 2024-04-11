@@ -5,13 +5,14 @@ Created on Tue Mar 26 10:57:50 2024
 @author: marie
 """
 import os
-import matplotlib.pylab as plt
 import numpy as np
-import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import afmformats
 import nanite
 
-sns.set_theme(style="whitegrid", palette="muted")
+
 
 allfilesinfolder = os.listdir(r'Data_QI') 
 must_end_in = '.jpk-qi-series'
@@ -20,17 +21,39 @@ jpk_qi_series_files = [os.path.join('Data_QI',file) for file in allfilesinfolder
 # create empty list to store all the data extracted from each jpk-force file
 jpk_qi_series_list = []
 
-    
-# for loop to extract and append all the separate jpk-force data to the list jpk_force_data_list (length equal to the number of files in folder 'Data')
-for i in range(len(jpk_qi_series_files)):
-	data_extract = afmformats.load_data(jpk_qi_series_files[i])
-	afmdata = afmformats.afm_data.AFMData(jpk_qi_series_files[i])
-	AFMGroup = afmformats.afm_group.AFMGroup.append(afmdata)
-#	jpk_qi_series_list.append(data_extract)
 
-#print(jpk_qi_series_list[0][0].columns)
-#F = jpk_qi_series_list[0][0]['force']
-#print(len(F))
 
-AFMQMap = afmformats.afm_qmap.AFMQMap(AFMGroup)
-#print(AFMQMap)
+
+group = afmformats.AFMGroup("Data_QI\qi_Katerina_500nN_body_great training_150nm_pt40-data-2020.11.18-16.12.55.813-cropped-cropped.jpk-qi-data")
+
+qmap = afmformats.afm_qmap.AFMQMap(group)
+
+print(qmap.features)
+
+plot_qmap = qmap.get_qmap("data: height base point")
+
+viridis = cm.get_cmap('viridis', 256)
+print(viridis)
+newcolors = viridis(np.linspace(0, 1, 256))
+print(newcolors)
+pink = np.array([248/256, 24/256, 148/256, 1])
+print(pink)
+newcolors[:25, :] = pink
+print(newcolors)
+newcmp = ListedColormap(newcolors)
+print(newcmp)
+
+def plot_examples(cms):
+    """
+    helper function to plot two colormaps
+    """
+    np.random.seed(19680801)
+    data = np.random.randn(30, 30)
+
+    fig, axs = plt.subplots(1, 2, figsize=(6, 3), constrained_layout=True)
+    for [ax, cmap] in zip(axs, cms):
+        psm = ax.pcolormesh(data, cmap=cmap, rasterized=True, vmin=-4, vmax=4)
+        fig.colorbar(psm, ax=ax)
+    plt.show()
+
+plot_examples([viridis, newcmp])
