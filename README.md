@@ -7,19 +7,19 @@ This project is a collection of Python scripts used for processing and analyzing
 - `mainScript.py`: the main script file
 
 - `extractJPK.py`: file containing functions 
-    - `force()`: 
-    - (and hopefully soon also `QI()`)
+    - `force()`: returns `F, d, t`
+    - `QI()`: returns `qmap`
 
 - `plot.py`: file containing functions
-    - `Fd(F, d, k, save='False')`: 
-    - `Ft(F, t, k, save='False')`:
-    - `Fdsubplot(F, d, k, F_sub)`:
-    - `Ftsubplot(F, t, k, F_sub)`:
+    - `Fd(F, d, save='False')`: returns `fig`
+    - `Ft(F, t, save='False')`: returns `fig`
+    - `Fdsubplot(F, d, F_sub, colour1='blue', colour2='orangered', colour3='indigo', subplot_name='subplot', save='False'))`: returns `fig`
+    - `Ftsubplot(F, t, F_sub, colour1='blue', colour2='orangered', colour3='indigo', subplot_name='subplot', save='False')`: returns `fig`
 
 - `procBasic.py`: file containing functions
-    - `max(F)`: 
-    - `baselineSubtraction(F)`:
-    - `smoothingSG`: 
+    - `max(F)`: returns `max_value, max_element`
+    - `baselineSubtraction(F)`: returns `F_bS`
+    - `smoothingSG(F, window_size, poly_order)`: returns `F_smoothSG`
 
 
 ## Libraries Used
