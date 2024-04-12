@@ -13,8 +13,10 @@ import plot
 import procBasic
 
 
-# extract the data from all the jpk-force files in the directory 'Data'
+# extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 d, F, t, segment, d_approach, F_approach, t_approach, d_inter, F_inter, t_inter, d_retract, F_retract, t_retract = extractJPK.force()
+# extract the QI data from all the jpk-qi-data files in the directory 'Data_QI'
+qmap = extractJPK.QI()
 
 # test plotting
 #fig = plot.Fd(F, F_approach, d_approach, F_inter, d_inter, F_retract, d_retract)

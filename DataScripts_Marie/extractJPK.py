@@ -95,3 +95,19 @@ def force():
         
     
     return d, F, t, segment, d_approach, F_approach, t_approach, d_inter, F_inter, t_inter, d_retract, F_retract, t_retract
+
+def QI():
+    allfilesinfolder = os.listdir(r'Data_QI') 
+    must_end_in = '.jpk-qi-data'
+    jpk_qi_data_files = [os.path.join('Data_QI',file) for file in allfilesinfolder if file[-len(must_end_in):] == must_end_in]
+
+    # create empty list to store all the data extracted from each jpk-force file
+    qmap = []
+    
+    
+    for i in range(len(jpk_qi_data_files)):
+        group = afmformats.AFMGroup(jpk_qi_data_files[i])
+        qmap.append(afmformats.afm_qmap.AFMQMap(group))
+
+    print(qmap)
+    return qmap

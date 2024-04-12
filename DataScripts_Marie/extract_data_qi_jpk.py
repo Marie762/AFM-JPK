@@ -7,7 +7,7 @@ Created on Tue Mar 26 10:57:50 2024
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
+from matplotlib import axes, cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import afmformats
 import nanite
@@ -32,18 +32,17 @@ group = afmformats.AFMGroup("Data_QI\qi_Katerina_500nN_body_great training_150nm
 qmap = afmformats.afm_qmap.AFMQMap(group)
 #print(qmap)
 
-
+##print(qmap.get_coords(which='um'))
 plot_qmap1 = qmap.get_qmap("data: height base point")
-#print(plot_qmap1)
 
-plot_qmap2 = qmap.get_qmap("data: piezo range")
-#print(plot_qmap2)
 
-plot_qmap3 = qmap.get_qmap("data: scan order")
-#print(plot_qmap3)
+x_data = np.around(plot_qmap1[0], decimals=3)
+y_data = np.around(plot_qmap1[1], decimals=3)
 
-#df = np.random.randn(10, 10)
-#sns.heatmap(plot_qmap1[2])
-sns.heatmap(plot_qmap1[2])
-#sns.heatmap(plot_qmap3[2])
+dataframe_qmap = pd.DataFrame(data=plot_qmap1[2], index=x_data, columns=y_data)
+
+print(dataframe_qmap)
+
+sns.heatmap(dataframe_qmap, center=5.94)
+
 plt.show()
