@@ -30,71 +30,35 @@ def force():
     ysc = 1e9 # nN
     dsc = 1e6 # microns
 
-    # create three empty lists to store the height (d), force (F), and time (t) values of each jpk-force file
+    # create three empty lists to store the height (d), force (F), and time (t) values of each jpk-force file  
     d = []
     F = []
     t = []
-    segment = []
 
     # add all the height, force, and time data to separate lists, with the element corresponding to the jpk_force_data_list
     for j in range(len(jpk_force_files)):
-        d.append(jpk_force_data_list[j][0]["height (measured)"]*dsc)
-        F.append(jpk_force_data_list[j][0]["force"]*ysc)
-        t.append(jpk_force_data_list[j][0]["time"])
-        segment.append(jpk_force_data_list[j][0]["segment"])
-       
-    # create more empty lists to store approch and retract curves 
-    d_approach = []
-    F_approach = []
-    t_approach = []
-    d_inter = []
-    F_inter = []
-    t_inter = []
-    d_retract = []
-    F_retract = []
-    t_retract = []
+        # create three empty lists to locally store the [approach, intermediate, retract] data
+        d_local = []
+        F_local = []
+        t_local = []
+        
+        d_local.append(jpk_force_data_list[j][0].appr["height (measured)"]*dsc)
+        d_local.append(jpk_force_data_list[j][0].intr["height (measured)"]*dsc)
+        d_local.append(jpk_force_data_list[j][0].retr["height (measured)"]*dsc)
+        
+        F_local.append(jpk_force_data_list[j][0].appr["force"]*ysc)
+        F_local.append(jpk_force_data_list[j][0].intr["force"]*ysc)
+        F_local.append(jpk_force_data_list[j][0].retr["force"]*ysc)
+        
+        t_local.append(jpk_force_data_list[j][0].appr["time"])
+        t_local.append(jpk_force_data_list[j][0].intr["time"])
+        t_local.append(jpk_force_data_list[j][0].retr["time"])
     
-    for x in range(len(F)):
-        local_d0_list = []
-        local_F0_list = []
-        local_t0_list = []
-        local_d1_list = []
-        local_F1_list = []
-        local_t1_list = []
-        local_d2_list = []
-        local_F2_list = []
-        local_t2_list = []
-        
-        for y in range (len(F[x])):
-            if segment[x][y] == 0:
-                # approach
-                local_d0_list.append(d[x][y])
-                local_F0_list.append(F[x][y])
-                local_t0_list.append(t[x][y])
-            if segment[x][y] == 1:
-                # intermediate
-                local_d1_list.append(d[x][y])
-                local_F1_list.append(F[x][y])
-                local_t1_list.append(t[x][y])
-            if segment[x][y] == 2:
-                # retract
-                local_d2_list.append(d[x][y])
-                local_F2_list.append(F[x][y])
-                local_t2_list.append(t[x][y])
-        
-        # append local arrays to corresponding list
-        d_approach.append(np.array(local_d0_list))
-        F_approach.append(np.array(local_F0_list))
-        t_approach.append(np.array(local_t0_list))
-        d_inter.append(np.array(local_d1_list))
-        F_inter.append(np.array(local_F1_list))
-        t_inter.append(np.array(local_t1_list))
-        d_retract.append(np.array(local_d2_list))
-        F_retract.append(np.array(local_F2_list))
-        t_retract.append(np.array(local_t2_list))
-        
+        d.append(d_local)
+        F.append(F_local)
+        t.append(t_local)
     
-    return d, F, t, segment, d_approach, F_approach, t_approach, d_inter, F_inter, t_inter, d_retract, F_retract, t_retract
+    return d, F, t
 
 def QI():
     allfilesinfolder = os.listdir(r'Data_QI') 
@@ -109,5 +73,4 @@ def QI():
         group = afmformats.AFMGroup(jpk_qi_data_files[i])
         qmap.append(afmformats.afm_qmap.AFMQMap(group))
 
-    print(qmap)
     return qmap

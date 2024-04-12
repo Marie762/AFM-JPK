@@ -8,24 +8,24 @@ from scipy.signal import savgol_filter
 import numpy as np
 
 
-def max(F_approach):
+def max(F):
     max_value = []
     max_element = []
-    for k in range(len(F_approach)):
-        max_value.append(np.ndarray.max(F_approach[k]))
-        max_element.append(np.argmax(F_approach[k]))
+    for k in range(len(F)):
+        max_value.append(np.ndarray.max(F[k][0]))
+        max_element.append(np.argmax(F[k][0]))
     return max_value, max_element
 
-def baselineSubtraction(F_approach, F_inter, F_retract):
-    F_bS1 = []
-    F_bS2 = []
-    F_bS3 = []
-    for k in range(len(F_approach)):
-        min_value = np.ndarray.min(F_approach[k])
-        F_bS1.append(F_approach[k] - min_value)
-        F_bS2.append(F_inter[k]- min_value)
-        F_bS3.append(F_retract[k]- min_value)
-    return F_bS1, F_bS2, F_bS3
+def baselineSubtraction(F):
+    F_bS = []
+    for k in range(len(F)):
+        F_bS_local = []
+        min_value = np.ndarray.min(F[k][0])
+        F_bS_local.append(F[k][0] - min_value)
+        F_bS_local.append(F[k][1] - min_value)
+        F_bS_local.append(F[k][2] - min_value)
+        F_bS.append(F_bS_local)
+    return F_bS
 
 def smoothingSG(F_approach, F_inter, F_retract, window_size, poly_order):
     F_smoothSG1 = []

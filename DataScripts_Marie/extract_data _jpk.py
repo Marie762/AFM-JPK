@@ -56,7 +56,3 @@ for j in range(len(jpk_force_files)):
     F.append(jpk_force_data_list[j][0]["force"]*ysc)
     t.append(jpk_force_data_list[j][0]["time"])
     t2.append(jpk_force_data_list[j][0].intr["time"])
-    .appr
-    .retr
-
-print(F2)
