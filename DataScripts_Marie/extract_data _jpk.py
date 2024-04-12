@@ -13,16 +13,6 @@ import pandas
 import seaborn as sns
 import afmformats
 
-sns.set_theme(style="whitegrid", palette="muted")
-
-# afmformats useful commands:
-	# afmformats.load_data(r"path")
-	# dslist[0].columns
-	# dslist[0]["force"]
-
-
-# List all jpk-force files from the folder 'Data'
-
 allfilesinfolder = os.listdir(r'Data') 
 must_end_in = '.jpk-force'
 jpk_force_files = [os.path.join('Data',file) for file in allfilesinfolder if file[-len(must_end_in):] == must_end_in]
@@ -36,23 +26,38 @@ for i in range(len(jpk_force_files)):
     jpk_force_data_list.append(data_extract)
 
 # to access specific data in jpk_force_data_list: 
-	# jpk_force_data_list[0].columns - returns the column names of file 1 (corresponds to element 0)
-	# jpk_force_data_list[0]["force"] - returns an array with the force data of file 1 (corresponds to element 0)
-
+# jpk_force_data_list[0].columns - returns the column names of file 1 (corresponds to element 0)
+# jpk_force_data_list[0]["force"] - returns an array with the force data of file 1 (corresponds to element 0)
 
 # scale conversion constants
 ysc = 1e9 # nN
 dsc = 1e6 # microns
 
-# create three empty lists to store the height (d), force (F), and time (t) values of each jpk-force file
+# create three empty lists to store the height (d), force (F), and time (t) values of each jpk-force file  
 d = []
 F = []
-t2 = []
 t = []
 
 # add all the height, force, and time data to separate lists, with the element corresponding to the jpk_force_data_list
 for j in range(len(jpk_force_files)):
-    d.append(jpk_force_data_list[j][0]["height (measured)"]*dsc)
-    F.append(jpk_force_data_list[j][0]["force"]*ysc)
-    t.append(jpk_force_data_list[j][0]["time"])
-    t2.append(jpk_force_data_list[j][0].intr["time"])
+    # create three empty lists to locally store the [approach, intermediate, retract] data
+    d_local = []
+    F_local = []
+    t_local = []
+    
+    d_local.append(jpk_force_data_list[j][0].appr["height (measured)"]*dsc)
+    F_local.append(jpk_force_data_list[j][0].appr["force"]*ysc)
+    t_local.append(jpk_force_data_list[j][0].appr["time"])
+    
+    if jpk_force_data_list[j][0].modality == 'creep compliance':
+        d_local.append(jpk_force_data_list[j][0].intr["height (measured)"]*dsc)
+        F_local.append(jpk_force_data_list[j][0].intr["force"]*ysc)
+        t_local.append(jpk_force_data_list[j][0].intr["time"])
+        
+    d_local.append(jpk_force_data_list[j][0].retr["height (measured)"]*dsc)
+    F_local.append(jpk_force_data_list[j][0].retr["force"]*ysc)
+    t_local.append(jpk_force_data_list[j][0].retr["time"])
+
+    d.append(d_local)
+    F.append(F_local)
+    t.append(t_local)

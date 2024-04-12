@@ -43,15 +43,16 @@ def force():
         t_local = []
         
         d_local.append(jpk_force_data_list[j][0].appr["height (measured)"]*dsc)
-        d_local.append(jpk_force_data_list[j][0].intr["height (measured)"]*dsc)
-        d_local.append(jpk_force_data_list[j][0].retr["height (measured)"]*dsc)
-        
         F_local.append(jpk_force_data_list[j][0].appr["force"]*ysc)
-        F_local.append(jpk_force_data_list[j][0].intr["force"]*ysc)
-        F_local.append(jpk_force_data_list[j][0].retr["force"]*ysc)
-        
         t_local.append(jpk_force_data_list[j][0].appr["time"])
-        t_local.append(jpk_force_data_list[j][0].intr["time"])
+        
+        if jpk_force_data_list[j][0].modality == 'creep compliance':
+            d_local.append(jpk_force_data_list[j][0].intr["height (measured)"]*dsc)
+            F_local.append(jpk_force_data_list[j][0].intr["force"]*ysc)
+            t_local.append(jpk_force_data_list[j][0].intr["time"])
+            
+        d_local.append(jpk_force_data_list[j][0].retr["height (measured)"]*dsc)
+        F_local.append(jpk_force_data_list[j][0].retr["force"]*ysc)
         t_local.append(jpk_force_data_list[j][0].retr["time"])
     
         d.append(d_local)

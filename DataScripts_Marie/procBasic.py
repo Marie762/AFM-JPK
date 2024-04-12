@@ -23,47 +23,50 @@ def baselineSubtraction(F):
         min_value = np.ndarray.min(F[k][0])
         F_bS_local.append(F[k][0] - min_value)
         F_bS_local.append(F[k][1] - min_value)
-        F_bS_local.append(F[k][2] - min_value)
+        if len(F[k]) > 2:
+            F_bS_local.append(F[k][2] - min_value)
         F_bS.append(F_bS_local)
     return F_bS
 
-def smoothingSG(F_approach, F_inter, F_retract, window_size, poly_order):
-    F_smoothSG1 = []
-    F_smoothSG2 = []
-    F_smoothSG3 = []
-    for k in range(len(F_approach)):
-        if len(F_approach[k])>window_size:
-            smoothed_data1 = savgol_filter(F_approach[k], window_size, poly_order) # smoothing Savitzky-Golay filter
+def smoothingSG(F, window_size, poly_order):
+    F_smoothSG= []
+    for k in range(len(F)):
+        F_smoothSG_local = []
+        if len(F[k][0]) > window_size:
+            smoothed_data1 = savgol_filter(F[k][0], window_size, poly_order) # smoothing Savitzky-Golay filter
         else:
-            window_size = len(F_approach[k])
+            window_size = len(F[k][0])
             if window_size > poly_order:
-                smoothed_data1 = savgol_filter(F_approach[k], window_size, poly_order)
+                smoothed_data1 = savgol_filter(F[k][0], window_size, poly_order)
             else:
                 poly_order = window_size - 1
-                smoothed_data1 = savgol_filter(F_approach[k], window_size, poly_order)
+                smoothed_data1 = savgol_filter(F[k][0], window_size, poly_order)
+        F_smoothSG_local.append(smoothed_data1)
         
-        if len(F_inter[k])>window_size:
-            smoothed_data2 = savgol_filter(F_inter[k], window_size, poly_order)
+        if len(F[k][1]) > window_size:
+            smoothed_data2 = savgol_filter(F[k][1], window_size, poly_order)
         else:
-            window_size = len(F_inter[k])
+            window_size = len(F[k][1])
             if window_size > poly_order:
-                smoothed_data2 = savgol_filter(F_inter[k], window_size, poly_order)
+                smoothed_data2 = savgol_filter(F[k][1], window_size, poly_order)
             else:
                 poly_order = window_size - 1
-                smoothed_data2 = savgol_filter(F_inter[k], window_size, poly_order)
+                smoothed_data2 = savgol_filter(F[k][1], window_size, poly_order)
+        F_smoothSG_local.append(smoothed_data2)
         
-        if len(F_retract[k])>window_size:
-            smoothed_data3 = savgol_filter(F_retract[k], window_size, poly_order)
-        else:
-            window_size = len(F_retract[k])
-            if window_size > poly_order:
-                smoothed_data3 = savgol_filter(F_retract[k], window_size, poly_order)
+        if len(F[k]) > 2:
+            if len(F[k][2]) > window_size:
+                smoothed_data3 = savgol_filter(F[k][2], window_size, poly_order)
             else:
-                poly_order = window_size - 1
-                smoothed_data3 = savgol_filter(F_retract[k], window_size, poly_order)
+                window_size = len(F[k][2])
+                if window_size > poly_order:
+                    smoothed_data3 = savgol_filter(F[k][2], window_size, poly_order)
+                else:
+                    poly_order = window_size - 1
+                    smoothed_data3 = savgol_filter(F[k][2], window_size, poly_order)
+            F_smoothSG_local.append(smoothed_data3)
+
+        F_smoothSG.append(F_smoothSG)
         
-        F_smoothSG1.append(smoothed_data1)
-        F_smoothSG2.append(smoothed_data2)
-        F_smoothSG3.append(smoothed_data3)
-    return F_smoothSG1, F_smoothSG2, F_smoothSG3
+    return F_smoothSG
 
