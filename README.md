@@ -10,6 +10,14 @@ This project is a collection of Python scripts used for processing and analyzing
     - `force()`: returns `F, d, t`
     - `QI()`: returns `qmap`
 
+- `metadata.py`: file containting functions
+    - `JPKReaderList()`: returns `jpk_reader_list`
+    - `Sensitivity()`: returns `sensitivity_list`
+    - `SpringConstant()`: returns `spring_constant_list`
+    - `Position()`: returns `position_list`
+    - `Speed()`: returns `speed_list`
+    - `Setpoint()`: returns `setpoint_list`
+
 - `plot.py`: file containing functions
     - `Fd(F, d, save='False')`: returns `fig`
     - `Ft(F, t, save='False')`: returns `fig`
