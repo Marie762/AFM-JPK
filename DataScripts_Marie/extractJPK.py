@@ -68,10 +68,7 @@ def QI():
 
     # create empty list to store all the data extracted from each jpk-force file
     qmap = []
-    
-    
     for i in range(len(jpk_qi_data_files)):
         group = afmformats.AFMGroup(jpk_qi_data_files[i])
         qmap.append(afmformats.afm_qmap.AFMQMap(group))
-
     return qmap
