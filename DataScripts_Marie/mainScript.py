@@ -18,11 +18,12 @@ from scipy.signal import argrelmin
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 d, F, t = extractJPK.force()
 #spring_constant_list = metadata.SpringConstant()
+F_bS = procBasic.baselineSubtraction(F)
 
-M, B = procBasic.baselineLinearFit(F, d, percentage=50, plot='True', saveplot='True')
-argmin_list = procBasic.contactPoint(F,d, plot='True', saveplot='True')
+M, B = procBasic.baselineLinearFit(F_bS, d)
+argmin_list = procBasic.contactPoint(F,d)
 print(argmin_list)
-plt.show()
+
 
 # fig, ax = plt.subplots()
 # ax.plot(z, f, 'deepskyblue')

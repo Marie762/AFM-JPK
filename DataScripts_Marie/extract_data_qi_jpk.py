@@ -32,17 +32,18 @@ group = afmformats.AFMGroup("Data_QI\qi_Katerina_500nN_body_great training_150nm
 qmap = afmformats.afm_qmap.AFMQMap(group)
 #print(qmap)
 
-##print(qmap.get_coords(which='um'))
+print(qmap.features)
 plot_qmap1 = qmap.get_qmap("data: height base point")
 
 
 x_data = np.around(plot_qmap1[0], decimals=3)
 y_data = np.around(plot_qmap1[1], decimals=3)
 
+
 dataframe_qmap = pd.DataFrame(data=plot_qmap1[2], index=x_data, columns=y_data)
 
-print(dataframe_qmap)
+#print(dataframe_qmap)
 
-sns.heatmap(dataframe_qmap, center=5.94)
-
+ax = sns.heatmap(dataframe_qmap, center=5.94)
+ax.set(xlabel='x (um)', ylabel='y (um)', title='QI map')
 plt.show()

@@ -88,7 +88,7 @@ def baselineLinearFit(F, d, percentage=50, plot='False', saveplot='False'):
             ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
             ax.plot(x, lin_fit, 'orange', label='linear fit line')
             ax.plot(d[i][0][:percentage_slice], F[i][0][:percentage_slice], 'red', label='part of curve used in the linear fit')
-            ax.set(xlabel='d', ylabel='force', title='Force-distance curve %i' % i)
+            ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
             if saveplot == 'True':
                 fig.savefig('Results\Fd_baseline_linearfit_' + str(i) + '.png')
@@ -115,7 +115,7 @@ def contactPoint(F, d, plot='False', saveplot='False'):
             ax.plot(d[i][0], F_bS[i][0], 'deepskyblue', label='force-distance curve')
             ax.plot(d[i][0], M[i]*(d[i][0]) + B[i], 'orange', label='linear fit line')
             ax.plot(d[i][0][argmin_val], F_bS[i][0][argmin_val], 'ro', label='contact point estimation')
-            ax.set(xlabel='z', ylabel='force', title='Force-distance curve %i' % i)
+            ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
             if saveplot == 'True':
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
