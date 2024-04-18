@@ -71,4 +71,63 @@ def QI():
     for i in range(len(jpk_qi_data_files)):
         group = afmformats.AFMGroup(jpk_qi_data_files[i])
         qmap.append(afmformats.afm_qmap.AFMQMap(group))
-    return qmap
+    
+    # scale conversion constants
+    ysc = 1e9 # nN
+    dsc = 1e6 # microns
+    
+    Q = []
+    XY = []
+    
+    for k in range(len(qmap)):
+        xy_local = []
+        
+        get_qmap = qmap[k].get_qmap("data: height base point")
+        x_data = np.around(get_qmap[0], decimals=3)
+        y_data = np.around(get_qmap[1], decimals=3)
+        xy_local.append(x_data)
+        xy_local.append(y_data)
+        XY.append(xy_local)
+        
+        q_local = []
+          
+        d,F,t = [],[],[]
+
+        d_cols = []
+        F_cols = []
+        t_cols = []
+
+        for i in range(len(qmap[k].group)):
+            d_local = []
+            F_local = []
+            t_local = []
+            
+            # qmap[1].group[i]: force-distance data i 
+            d_local.append(qmap[k].group[i].appr["height (measured)"]*dsc)
+            F_local.append(qmap[k].group[i].appr["force"]*ysc)
+            t_local.append(qmap[k].group[i].appr["time"])
+            
+            d_local.append(qmap[k].group[i].retr["height (measured)"]*dsc)
+            F_local.append(qmap[k].group[i].retr["force"]*ysc)
+            t_local.append(qmap[k].group[i].retr["time"])
+            
+            d_cols.append(d_local)
+            F_cols.append(F_local)
+            t_cols.append(t_local)
+
+            if len(d_cols) == len(x_data):
+                d.append(d_cols)
+                F.append(F_cols)
+                t.append(t_cols)
+                
+                d_cols = []
+                F_cols = []
+                t_cols = []
+        
+        q_local.append(d)
+        q_local.append(F)
+        q_local.append(t)
+        Q.append(q_local)
+    
+    return qmap, Q, XY
+

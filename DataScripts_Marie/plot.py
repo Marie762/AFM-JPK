@@ -6,7 +6,8 @@ Created on Tue Apr 3 2024
 """
 
 import matplotlib.pylab as plt
-import matplotlib.colors as mcolors
+import seaborn as sns
+import pandas as pd
 
 def Fd(F, d, save='False'):
     for k in range(len(F)):
@@ -62,3 +63,9 @@ def Ftsubplot(F, t, F_sub, colour1='blue', colour2='orangered', colour3='indigo'
             fig.savefig('Results\Ft_' + subplot_name + '_' + str(k) + '.png')
     return fig
 
+def QIMap(data, index, columns):
+    dataframe_qmap = pd.DataFrame(data=data, index=index, columns=columns)
+    fig, ax = plt.subplots()
+    ax = sns.heatmap(dataframe_qmap)
+    ax.set(xlabel='x (um)', ylabel='y (um)', title='QI map')
+    return fig
