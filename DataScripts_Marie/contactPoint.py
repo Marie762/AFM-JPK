@@ -36,9 +36,9 @@ def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot='False', saveplot='
     
     return M, B
 
-def contactPoint(F, d, plot='False', saveplot='False'):
+def contactPoint1(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=50):
     F_bS = procBasic.baselineSubtraction(F)
-    M, B = baselineLinearFit(F_bS, d, perc_bottom=50, perc_top=85)
+    M, B = baselineLinearFit(F_bS, d, perc_bottom=perc_bottom, perc_top=perc_top)
     # empty list to store the index of the last intersection point of the F-d curve with the linear fit line 
     argmin_list = []
     for i in range(len(F_bS)):
@@ -48,15 +48,19 @@ def contactPoint(F, d, plot='False', saveplot='False'):
             difference_squared = (F_bS[i][0][j] - f)**2 # the difference-swuared between the force value and the value of the linear fit line at each point
             difference_list.append(difference_squared)
 
-        argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.1][-1]
-        # if len(argmin_val) != 0:
-        #     argmin_val = argmin_val[-1]
-        # else:
-        #     argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.01]
-        #     if len(argmin_val) != 0:
-        #         argmin_val = argmin_val[-1]
-        #     else:
-        #         argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.1][-1]
+        argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.0001]
+        if len(argmin_val) != 0:
+            argmin_val = argmin_val[-1]
+        else:
+            argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.001]
+            if len(argmin_val) != 0:
+                argmin_val = argmin_val[-1]
+            else:
+                argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.01]
+                if len(argmin_val) != 0:
+                    argmin_val = argmin_val[-1]
+                else:
+                    argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.1][-1]
         
         argmin_list.append(argmin_val)
 
@@ -93,7 +97,20 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
     
     return argmin_list
 
-def QIcontactPoint(F,d):
+def QIcontactPoint1(F, d, perc_bottom=0, perc_top=50):
+    contact_point_height = []
+    for m in range(len(F)):
+        contact_point_height_cols = []
+        argmin_list = contactPoint1(F[m],d[m],perc_bottom=perc_bottom, perc_top=perc_top)
+        
+        for n in range(len(F[m])):
+            contact_point_height_cols.append(d[m][n][0][argmin_list[n]])
+        
+        contact_point_height.append(contact_point_height_cols)
+    
+    return contact_point_height
+
+def QIcontactPoint2(F,d):
     contact_point_height = []
     for m in range(len(F)):
         contact_point_height_cols = []

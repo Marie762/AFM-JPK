@@ -15,20 +15,35 @@ import seaborn as sns
 import pandas as pd
 
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
-#d, F, t = extractJPK.force()
+d, F, t = extractJPK.force()
 
 
 # extract the QI data from all the jpk-qi-data files in the directory 'Data_QI'
-qmap, Q, XY = extractJPK.QI()
+# qmap, Q, XY = extractJPK.QI()
 
-for k in range(len(qmap)):
-    d = Q[k][0]
-    F = Q[k][1]
-    x_data = XY[k][0]
-    y_data = XY[k][1]
-    contact_point_height = contactPoint.QIcontactPoint(F,d)
-    fig = plot.QIMap(contact_point_height, y_data, x_data)
-    fig.savefig('Results\QIMap_' + str(k) + '.png')
+# for k in range(len(qmap)):
+#     d = Q[k][0]
+#     F = Q[k][1]
+#     x_data = XY[k][0]
+#     y_data = XY[k][1]
+#     if k == 0:
+#         contact_point_height = contactPoint.QIcontactPoint1(F,d)
+#         fig = plot.QIMap(contact_point_height, y_data, x_data, k, save='True')
+        
+#     if k == 1:
+#         contact_point_height = contactPoint.QIcontactPoint2(F,d)
+#         fig = plot.QIMap(contact_point_height, y_data, x_data, k, save='True')
+
+# plt.show()
+
+# k = 1
+# d = Q[k][0]
+# F = Q[k][1]
+# for m in range(len(F)):
+#     argmin_list = contactPoint.contactPoint2(F[m],d[m],plot='True')
+#     plt.show()
+
+# Q: [ [d1, F1, t1], [d2, F2, t2], ...]
 
 # F[0][0][0]: approach data for y = 0, x = 0
 # F[0][1][0]: approach data for y = 0, x = 1
