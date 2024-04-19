@@ -11,11 +11,20 @@ import plot
 import procBasic
 import contactPoint
 import metadata
+import youngsModulus
 import seaborn as sns
 import pandas as pd
 
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 d, F, t = extractJPK.force()
+
+
+# find apparant Youngs modulus
+F_bS = procBasic.baselineSubtraction(F)
+M, B, C = youngsModulus.PolyFit(F_bS, d, plot='True')
+
+plt.show()
+
 
 
 # extract the QI data from all the jpk-qi-data files in the directory 'Data_QI'
