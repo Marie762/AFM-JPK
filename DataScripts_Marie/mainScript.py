@@ -17,11 +17,25 @@ import pandas as pd
 
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 d, F, t = extractJPK.force()
-
+F_bS = procBasic.baselineSubtraction(F)
+# find contact point
+# contactPoint.contactPoint1(F, d, plot='True')
+k = 4
+argmin_list = contactPoint.contactPoint1(F, d)
+perc_top = 95
+slice_bottom = argmin_list[k]
+slice_top = round((perc_top/100)*len(F[k][0])) 
 
 # find apparant Youngs modulus
-F_bS = procBasic.baselineSubtraction(F)
-M, B, C = youngsModulus.PolyFit(F_bS, d, plot='True')
+popt, pcov = youngsModulus.parabolicIndenter(F[k][0][slice_bottom:slice_top], d[k][0][slice_bottom:slice_top])
+
+x = d[k][0][slice_bottom:slice_top]
+#y = popt[0]*(x**popt[1])
+
+fig, ax = plt.subplots()
+ax.plot(d[k][0], F_bS[k][0], 'deepskyblue')
+ax.plot(x, youngsModulus.func_power_law(x, *popt), 'orange')
+ax.set(xlabel='height measured (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
 
 plt.show()
 

@@ -48,19 +48,19 @@ def contactPoint1(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             difference_squared = (F_bS[i][0][j] - f)**2 # the difference-swuared between the force value and the value of the linear fit line at each point
             difference_list.append(difference_squared)
 
-        argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.0001]
+        # argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.0001]
+        # if len(argmin_val) != 0:
+        #     argmin_val = argmin_val[-1]
+        # else:
+        argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.001]
         if len(argmin_val) != 0:
             argmin_val = argmin_val[-1]
         else:
-            argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.001]
+            argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.01]
             if len(argmin_val) != 0:
                 argmin_val = argmin_val[-1]
             else:
-                argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.01]
-                if len(argmin_val) != 0:
-                    argmin_val = argmin_val[-1]
-                else:
-                    argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.1][-1]
+                argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.1][-1]
         
         argmin_list.append(argmin_val)
 

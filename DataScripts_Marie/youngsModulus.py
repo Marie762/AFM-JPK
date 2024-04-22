@@ -7,10 +7,30 @@ Created on Tue Apr 19 2024
 
 import matplotlib.pylab as plt
 import numpy as np
+from scipy.optimize import curve_fit
 import seaborn as sns
 import pandas as pd
 import procBasic
 import contactPoint
+
+def func_power_law(x, a):
+    return a * (x**(-3/2))
+
+def parabolicIndenter(F, delta):
+    # R_c: radius of tip curvature
+    # F: force
+    # delta: indentation
+    # v: Poisson's ratio
+    # E: Young's modulus
+    # R_c = 10e-9
+    # v = 0.5
+    
+    popt, pcov = curve_fit(func_power_law, delta, F, p0=[-0.17])
+    print(popt)
+    
+    # F = (4/3)*np.sqrt(R_c)*(E/(1-v**2))*delta**(3/2)
+    # E = (parabolic_fit_param*3*(1-v**2))/(4*np.sqrt(R_c))
+    return popt, pcov
 
 def PolyFit(F, d, plot='False', saveplot='False'):
     # two empty lists to store the gradients 'm' and constants 'b' of the linear fit function for each curve
