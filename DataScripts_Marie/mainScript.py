@@ -6,7 +6,7 @@ Created on Tue Apr 2 15:29:30 2024
 """
 import matplotlib.pylab as plt
 import numpy as np
-import extractJPK
+from extractJPK import QI,force
 import plot
 import procBasic
 import contactPoint
@@ -18,40 +18,55 @@ import pandas as pd
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 d, F, t = extractJPK.force()
 F_bS = procBasic.baselineSubtraction(F)
+spring_constant_list = metadata.SpringConstant()
+
+k = 3
+
+
 # find contact point
 # contactPoint.contactPoint1(F, d, plot='True')
-k = 4
-argmin_list = contactPoint.contactPoint1(F, d)
+
+argmin_list = contactPoint.contactPoint1(F_bS, d)
+
+d_hC = procBasic.heightCorrection(d, argmin_list)
+
 perc_top = 95
 slice_bottom = argmin_list[k]
-slice_top = round((perc_top/100)*len(F[k][0])) 
+slice_top = round((perc_top/100)*len(F_bS[k][0])) 
+
+f = F_bS[k][0]
+z = d_hC[k][0]
+stiffness = spring_constant_list[k]
+deflection = f/stiffness
+delta = z - deflection
+
+
 
 # find apparant Youngs modulus
-popt, pcov = youngsModulus.parabolicIndenter(F[k][0][slice_bottom:slice_top], d[k][0][slice_bottom:slice_top])
+popt, pcov = youngsModulus.parabolicIndenter(F_bS[k][0], delta) # [slice_bottom:slice_top]
 
-x = d[k][0][slice_bottom:slice_top]
 #y = popt[0]*(x**popt[1])
 
 fig, ax = plt.subplots()
-ax.plot(d[k][0], F_bS[k][0], 'deepskyblue')
-ax.plot(x, youngsModulus.func_power_law(x, *popt), 'orange')
-ax.set(xlabel='height measured (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
+ax.plot(delta, F_bS[k][0], 'deepskyblue')
+ax.plot(d_hC[k][0], F_bS[k][0], 'orange')
+ax.set(xlabel='tip-sample separation (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
 
 plt.show()
 
 
 
 # extract the QI data from all the jpk-qi-data files in the directory 'Data_QI'
-# qmap, Q, XY = extractJPK.QI()
+# qmap, Q, XY = QI()
 
 # for k in range(len(qmap)):
 #     d = Q[k][0]
 #     F = Q[k][1]
 #     x_data = XY[k][0]
 #     y_data = XY[k][1]
-#     if k == 0:
-#         contact_point_height = contactPoint.QIcontactPoint1(F,d)
-#         fig = plot.QIMap(contact_point_height, y_data, x_data, k, save='True')
+#     # if k == 0:
+#     #     contact_point_height = contactPoint.QIcontactPoint1(F,d)
+#     #     fig = plot.QIMap(contact_point_height, y_data, x_data, k, save='True')
         
 #     if k == 1:
 #         contact_point_height = contactPoint.QIcontactPoint2(F,d)

@@ -66,9 +66,8 @@ def Ftsubplot(F, t, F_sub, colour1='blue', colour2='orangered', colour3='indigo'
 def QIMap(data, ind, col, k, save='False'):
     dataframe_qmap = pd.DataFrame(data=data, index=ind, columns=col)
     fig, ax = plt.subplots()
-    #ax = sns.heatmap(dataframe_qmap)
-    im = ax.imshow(dataframe_qmap, origin='lower', extent=(col[0], col[-1], ind[0], ind[-1]), 
-                   interpolation='gaussian', cmap='viridis')
+    # ax = sns.heatmap(dataframe_qmap)
+    im = ax.imshow(dataframe_qmap, origin='lower', extent=(col[0], col[-1], ind[0], ind[-1]), interpolation='gaussian', cmap='viridis')  #interpolation='gaussian'
     fig.colorbar(im, ax=ax, label='Height (um)')
     ax.set(xlabel='x (um)', ylabel='y (um)', title='QI map ' + str(k))
     if save == 'True':

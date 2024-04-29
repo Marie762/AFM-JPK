@@ -25,7 +25,7 @@ def parabolicIndenter(F, delta):
     # R_c = 10e-9
     # v = 0.5
     
-    popt, pcov = curve_fit(func_power_law, delta, F, p0=[-0.17])
+    popt, pcov = curve_fit(func_power_law, delta, F)
     print(popt)
     
     # F = (4/3)*np.sqrt(R_c)*(E/(1-v**2))*delta**(3/2)

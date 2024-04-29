@@ -29,6 +29,18 @@ def baselineSubtraction(F):
         F_bS.append(F_bS_local)
     return F_bS
 
+def heightCorrection(d, argmin_list):
+    d_hC = []
+    for k in range(len(d)):
+        d_hC_local = []
+        contact_point = argmin_list[k]
+        d_hC_local.append(d[k][0] - d[k][0][contact_point])
+        d_hC_local.append(d[k][1] - d[k][0][contact_point])
+        if len(d[k]) > 2:
+            d_hC_local.append(d[k][2] - d[k][0][contact_point])
+        d_hC.append(d_hC_local)
+    return d_hC
+
 def smoothingSG(F, window_size, poly_order):
     F_smoothSG = []
     for k in range(len(F)):
