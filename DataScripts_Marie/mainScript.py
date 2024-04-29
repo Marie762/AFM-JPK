@@ -6,73 +6,84 @@ Created on Tue Apr 2 15:29:30 2024
 """
 import matplotlib.pylab as plt
 import numpy as np
-from extractJPK import QI,force
-import plot
-import procBasic
-import contactPoint
-import metadata
-import youngsModulus
 import seaborn as sns
 import pandas as pd
+from extractJPK import QI, force
+from procBasic import baselineSubtraction, heightCorrection, smoothingSG
+from plot import Fd, QIMap
+from contactPoint import contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2
+from metadata import Sensitivity, SpringConstant, Speed
+from youngsModulus import parabolicIndenter, func_power_law,  func_E
+
+###### Fd ###############################################################################
 
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
-d, F, t = extractJPK.force()
-F_bS = procBasic.baselineSubtraction(F)
-spring_constant_list = metadata.SpringConstant()
+d, F, t = force()
+F_bS = baselineSubtraction(F)
+spring_constant_list = SpringConstant()
 
-k = 3
+k = 2
+
+print(spring_constant_list[k])
 
 
-# find contact point
-# contactPoint.contactPoint1(F, d, plot='True')
+argmin_list = contactPoint1(F_bS, d)
 
-argmin_list = contactPoint.contactPoint1(F_bS, d)
-
-d_hC = procBasic.heightCorrection(d, argmin_list)
+#d_hC = heightCorrection(d, argmin_list)
 
 perc_top = 95
 slice_bottom = argmin_list[k]
 slice_top = round((perc_top/100)*len(F_bS[k][0])) 
 
-f = F_bS[k][0]
-z = d_hC[k][0]
+f = F_bS[k][0]*10**(-9)
+z = d[k][0]*10**(-6)
 stiffness = spring_constant_list[k]
 deflection = f/stiffness
-delta = z - deflection
+delta = z + deflection
 
 
 
 # find apparant Youngs modulus
-popt, pcov = youngsModulus.parabolicIndenter(F_bS[k][0], delta) # [slice_bottom:slice_top]
+popt, pcov = parabolicIndenter(f[slice_bottom:slice_top], delta[slice_bottom:slice_top]) # [slice_bottom:slice_top]
 
-#y = popt[0]*(x**popt[1])
+
 
 fig, ax = plt.subplots()
-ax.plot(delta, F_bS[k][0], 'deepskyblue')
-ax.plot(d_hC[k][0], F_bS[k][0], 'orange')
-ax.set(xlabel='tip-sample separation (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-
+ax.plot(z, f, 'deepskyblue') # F_bS[k][0]
+ax.plot(delta, f, 'r') # F_bS[k][0]
+#ax.plot(delta[slice_bottom:slice_top], func_E(delta[slice_bottom:slice_top], *popt), 'orange')
+ax.set(xlabel='tip-sample distance (m)', ylabel='force (N)', title='Force-delta curve %i' % k)
+fig.savefig('Results\Fdelta_' + str(k) + '.png')
 plt.show()
 
+################################################################################
 
-
-# extract the QI data from all the jpk-qi-data files in the directory 'Data_QI'
-# qmap, Q, XY = QI()
+############### QI ###########################################################
+ 
+# # extract the QI data from all the jpk-qi-data files in the directory 'Data_QI'
+# qmap, Q, XY = QI(load_from_pickle=True)
 
 # for k in range(len(qmap)):
 #     d = Q[k][0]
 #     F = Q[k][1]
 #     x_data = XY[k][0]
 #     y_data = XY[k][1]
-#     # if k == 0:
-#     #     contact_point_height = contactPoint.QIcontactPoint1(F,d)
-#     #     fig = plot.QIMap(contact_point_height, y_data, x_data, k, save='True')
+#     if k == 0:
+#         contact_point_height = QIcontactPoint1(F,d)
+#         fig = QIMap(contact_point_height, y_data, x_data, k, save='True')
         
 #     if k == 1:
-#         contact_point_height = contactPoint.QIcontactPoint2(F,d)
-#         fig = plot.QIMap(contact_point_height, y_data, x_data, k, save='True')
+#         contact_point_height = QIcontactPoint2(F,d)
+#         fig = QIMap(contact_point_height, y_data, x_data, k, save='True')
+        
+#     if k == 2:
+#         contact_point_height = QIcontactPoint2(F,d)
+#         fig = QIMap(contact_point_height, y_data, x_data, k, save='True')
 
 # plt.show()
+
+
+#####################################################################
 
 # k = 1
 # d = Q[k][0]

@@ -149,18 +149,22 @@ if __name__ == '__main__':
     qmap, Q, XY = QI(load_from_pickle=True)
     import matplotlib.pyplot as plt
     from plot import QIMap
-    from contactPoint import QIcontactPoint2
+    from contactPoint import QIcontactPoint1, QIcontactPoint2
     
     for k in range(len(qmap)):
         d = Q[k][0]
         F = Q[k][1]
         x_data = XY[k][0]
         y_data = XY[k][1]
-        # if k == 0:
-        #     contact_point_height = contactPoint.QIcontactPoint1(F,d)
-        #     fig = QIMap(contact_point_height, y_data, x_data, k, save='True')
+        if k == 0:
+            contact_point_height = QIcontactPoint1(F,d)
+            fig = QIMap(contact_point_height, y_data, x_data, k, save='True')
             
         if k == 1:
+            contact_point_height = QIcontactPoint2(F,d)
+            fig = QIMap(contact_point_height, y_data, x_data, k, save='True')
+            
+        if k == 2:
             contact_point_height = QIcontactPoint2(F,d)
             fig = QIMap(contact_point_height, y_data, x_data, k, save='True')
 

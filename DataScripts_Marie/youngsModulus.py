@@ -5,6 +5,7 @@ Created on Tue Apr 19 2024
 @author: marie
 """
 
+from tkinter import X
 import matplotlib.pylab as plt
 import numpy as np
 from scipy.optimize import curve_fit
@@ -13,8 +14,13 @@ import pandas as pd
 import procBasic
 import contactPoint
 
-def func_power_law(x, a):
-    return a * (x**(-3/2))
+def func_power_law(x, a, b, c):
+    return c +  a * (x**(b)) #3/2
+
+def func_E(x, E, c1):
+    v = 0.5
+    R_c = 50e-9
+    return c1 + (4/3)*np.sqrt(R_c)*(E/(1-v**2))*x**(3/2)
 
 def parabolicIndenter(F, delta):
     # R_c: radius of tip curvature
@@ -25,7 +31,7 @@ def parabolicIndenter(F, delta):
     # R_c = 10e-9
     # v = 0.5
     
-    popt, pcov = curve_fit(func_power_law, delta, F)
+    popt, pcov = curve_fit(func_E, delta, F,  maxfev = 2000)
     print(popt)
     
     # F = (4/3)*np.sqrt(R_c)*(E/(1-v**2))*delta**(3/2)

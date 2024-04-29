@@ -7,6 +7,7 @@ Created on Tue Apr 3 2024
 from scipy.signal import savgol_filter
 import numpy as np
 import matplotlib.pylab as plt
+from metadata import SpringConstant
 
 
 def max(F):
@@ -40,6 +41,32 @@ def heightCorrection(d, argmin_list):
             d_hC_local.append(d[k][2] - d[k][0][contact_point])
         d_hC.append(d_hC_local)
     return d_hC
+
+def tipDisplacement(F,d):
+    delta = []
+    spring_constant_list = SpringConstant()
+    for k in range(len(F)):
+        delta_local = []
+        stiffness = spring_constant_list[k]
+        f0 = F[k][0]*10**(-9)
+        z0 = d[k][0]*10**(-6)
+        f1 = F[k][1]*10**(-9)
+        z1 = d[k][1]*10**(-6)
+        deflection0 = f0/stiffness
+        deflection1 = f1/stiffness
+        delta0 = z0 + deflection0
+        delta_local.append(delta0)
+        delta1 = z1 + deflection1
+        delta_local.append(delta1)
+        if len(d[k]) > 2:
+            f2 = F[k][2]*10**(-9)
+            z2 = d[k][2]*10**(-6)
+            deflection2 = f2/stiffness
+            delta2 = z2 + deflection2
+            delta_local.append(delta2)
+        delta.append(delta_local)
+    return delta
+
 
 def smoothingSG(F, window_size, poly_order):
     F_smoothSG = []
