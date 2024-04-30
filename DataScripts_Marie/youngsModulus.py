@@ -9,10 +9,8 @@ from tkinter import X
 import matplotlib.pylab as plt
 import numpy as np
 from scipy.optimize import curve_fit
-import seaborn as sns
-import pandas as pd
-import procBasic
-import contactPoint
+from contactPoint import contactPoint1
+from plot import Fdsubplot
 
 def func_power_law(x, a, b, c):
     return c +  a * (x**(b)) #3/2
@@ -22,7 +20,7 @@ def func_E(x, E, c1):
     R_c = 50e-9
     return c1 + (4/3)*np.sqrt(R_c)*(E/(1-v**2))*x**(3/2)
 
-def parabolicIndenter(F, delta):
+def parabolicIndenter(F, delta, argmin_list):
     # R_c: radius of tip curvature
     # F: force
     # delta: indentation
@@ -30,20 +28,33 @@ def parabolicIndenter(F, delta):
     # E: Young's modulus
     # R_c = 10e-9
     # v = 0.5
-    
-    popt, pcov = curve_fit(func_E, delta, F,  maxfev = 2000)
-    print(popt)
+    popt_list = []
+    for k in range(len(F)):
+        #perc_top = 95
+        slice_bottom = argmin_list[k]
+        #slice_top = round((perc_top/100)*len(F[k][0])) 
+        slice_top = slice_bottom + 500
+        delt = delta[k][0]*10**(-6)
+        f = F[k][0]*10**(-9)
+        popt, pcov = curve_fit(func_E, delt[slice_bottom:slice_top], f[slice_bottom:slice_top],  maxfev = 100000)
+        popt_list.append(popt)
+        print(k, popt[0])
+        
+        fig, ax = plt.subplots()
+        ax.plot(delt, f, 'r') # F_bS[k][0]
+        ax.plot(delt[slice_bottom:slice_top], func_E(delt[slice_bottom:slice_top], *popt), 'orange')
+        ax.set(xlabel='tip-sample distance (m)', ylabel='force (N)', title='Force-delta curve %i' % k)
     
     # F = (4/3)*np.sqrt(R_c)*(E/(1-v**2))*delta**(3/2)
     # E = (parabolic_fit_param*3*(1-v**2))/(4*np.sqrt(R_c))
-    return popt, pcov
+    return popt_list, fig
 
 def PolyFit(F, d, plot='False', saveplot='False'):
     # two empty lists to store the gradients 'm' and constants 'b' of the linear fit function for each curve
     M = []
     B = []
     C = []
-    argmin_list = contactPoint.contactPoint1(F, d)
+    argmin_list = contactPoint1(F, d)
     perc_top = 90
     for i in range(len(F)):
         slice_bottom = argmin_list[i]

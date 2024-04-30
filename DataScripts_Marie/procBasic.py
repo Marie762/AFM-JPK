@@ -30,15 +30,15 @@ def baselineSubtraction(F):
         F_bS.append(F_bS_local)
     return F_bS
 
-def heightCorrection(d, argmin_list):
+def heightCorrection(d):
     d_hC = []
     for k in range(len(d)):
         d_hC_local = []
-        contact_point = argmin_list[k]
-        d_hC_local.append(d[k][0] - d[k][0][contact_point])
-        d_hC_local.append(d[k][1] - d[k][0][contact_point])
+        value_first_element = d[k][0][0]
+        d_hC_local.append(-(d[k][0] - value_first_element))
+        d_hC_local.append(-(d[k][1] - value_first_element))
         if len(d[k]) > 2:
-            d_hC_local.append(d[k][2] - d[k][0][contact_point])
+            d_hC_local.append(-(d[k][2] - value_first_element))
         d_hC.append(d_hC_local)
     return d_hC
 
@@ -55,15 +55,15 @@ def tipDisplacement(F,d):
         deflection0 = f0/stiffness
         deflection1 = f1/stiffness
         delta0 = z0 + deflection0
-        delta_local.append(delta0)
+        delta_local.append(delta0*10**(6))
         delta1 = z1 + deflection1
-        delta_local.append(delta1)
+        delta_local.append(delta1*10**(6))
         if len(d[k]) > 2:
             f2 = F[k][2]*10**(-9)
             z2 = d[k][2]*10**(-6)
             deflection2 = f2/stiffness
             delta2 = z2 + deflection2
-            delta_local.append(delta2)
+            delta_local.append(delta2*10**(6))
         delta.append(delta_local)
     return delta
 
