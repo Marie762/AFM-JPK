@@ -13,14 +13,19 @@ from contactPoint import contactPoint1
 from plot import Fdsubplot
 
 def func_power_law(x, a, b, c):
-    return c +  a * (x**(b)) #3/2
+    return c +  a * (x**b)
 
-def func_E(x, E, c1):
+def func_parabolic(x, E, c0):
     v = 0.5
-    R_c = 50e-9
-    return c1 + (4/3)*np.sqrt(R_c)*(E/(1-v**2))*x**(3/2)
+    R_c = 10e-9
+    return c0 + (4/3)*np.sqrt(R_c)*(E/(1-v**2))*x**(3/2)
 
-def parabolicIndenter(F, delta, argmin_list):
+def func_conical(x, E, c0):
+    v = 0.5
+    alpha = np.pi/4
+    return c0 + (E/(1-v**2))*((2*np.tan(alpha))/np.pi)*x**2
+
+def fitYoungsModulus(F, delta, argmin_list):
     # R_c: radius of tip curvature
     # F: force
     # delta: indentation
@@ -30,19 +35,19 @@ def parabolicIndenter(F, delta, argmin_list):
     # v = 0.5
     popt_list = []
     for k in range(len(F)):
-        #perc_top = 95
+        perc_top = 95
         slice_bottom = argmin_list[k]
-        #slice_top = round((perc_top/100)*len(F[k][0])) 
-        slice_top = slice_bottom + 500
+        slice_top = round((perc_top/100)*len(F[k][0])) 
+        #slice_top = slice_bottom + 500
         delt = delta[k][0]*10**(-6)
         f = F[k][0]*10**(-9)
-        popt, pcov = curve_fit(func_E, delt[slice_bottom:slice_top], f[slice_bottom:slice_top],  maxfev = 100000)
+        popt, pcov = curve_fit(func_power_law, delt[slice_bottom:slice_top], f[slice_bottom:slice_top],  maxfev = 100000)
         popt_list.append(popt)
-        print(k, popt[0])
+        print(k, popt)
         
         fig, ax = plt.subplots()
         ax.plot(delt, f, 'r') # F_bS[k][0]
-        ax.plot(delt[slice_bottom:slice_top], func_E(delt[slice_bottom:slice_top], *popt), 'orange')
+        ax.plot(delt[slice_bottom:slice_top], func_power_law(delt[slice_bottom:slice_top], *popt), 'orange')
         ax.set(xlabel='tip-sample distance (m)', ylabel='force (N)', title='Force-delta curve %i' % k)
     
     # F = (4/3)*np.sqrt(R_c)*(E/(1-v**2))*delta**(3/2)

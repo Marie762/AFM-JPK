@@ -13,7 +13,7 @@ from procBasic import baselineSubtraction, heightCorrection, tipDisplacement, sm
 from plot import Fd, Fdsubplot, QIMap
 from contactPoint import contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2
 from metadata import Sensitivity, SpringConstant, Speed
-from youngsModulus import parabolicIndenter, func_power_law,  func_E
+from youngsModulus import fitYoungsModulus, func_power_law,  func_parabolic, func_conical
 
 ###### Fd ###############################################################################
 
@@ -30,7 +30,7 @@ delta_hC = heightCorrection(delta)
 
 
 # find apparant Youngs modulus
-popt_list, fig = parabolicIndenter(F_bS, delta_hC, argmin_list) # [slice_bottom:slice_top]
+popt_list, fig = fitYoungsModulus(F_bS, delta_hC, argmin_list) # [slice_bottom:slice_top]
  
 # k = 0
 # fig, ax = plt.subplots()
