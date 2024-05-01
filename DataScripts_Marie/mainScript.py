@@ -9,11 +9,11 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from extractJPK import QI, force
-from procBasic import baselineSubtraction, heightCorrection, tipDisplacement, smoothingSG
+from procBasic import baselineSubtraction, heightCorrection, heightZeroAtContactPoint, tipDisplacement, smoothingSG
 from plot import Fd, Fdsubplot, QIMap
 from contactPoint import contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2
 from metadata import Sensitivity, SpringConstant, Speed
-from youngsModulus import fitYoungsModulus, func_power_law,  func_parabolic, func_conical
+from youngsModulus import fitYoungsModulus, func_power_law,  func_parabolic, func_conical, variationYoungsModulus
 
 ###### Fd ###############################################################################
 
@@ -26,11 +26,14 @@ argmin_list = contactPoint1(F_bS,d)
 
 delta = tipDisplacement(F_bS, d)
 delta_hC = heightCorrection(delta)
+delta_hZ = heightZeroAtContactPoint(delta_hC, argmin_list)
 
 
 
 # find apparant Youngs modulus
-popt_list, fig = fitYoungsModulus(F_bS, delta_hC, argmin_list) # [slice_bottom:slice_top]
+#popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, argmin_list) # [slice_bottom:slice_top]
+
+E, fig = variationYoungsModulus(F, delta_hZ, argmin_list, indenter='parabolic')
  
 # k = 0
 # fig, ax = plt.subplots()

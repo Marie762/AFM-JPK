@@ -42,6 +42,19 @@ def heightCorrection(d):
         d_hC.append(d_hC_local)
     return d_hC
 
+def heightZeroAtContactPoint(d, argmin_list):
+    d_hZ = []
+    for k in range(len(d)):
+        d_hZ_local = []
+        contact_point_arg = argmin_list[k]
+        contact_point_value = d[k][0][contact_point_arg]
+        d_hZ_local.append(d[k][0] - contact_point_value)
+        d_hZ_local.append(d[k][1] - contact_point_value)
+        if len(d[k]) > 2:
+            d_hZ_local.append(d[k][2] - contact_point_value)
+        d_hZ.append(d_hZ_local)
+    return d_hZ
+
 def tipDisplacement(F,d):
     delta = []
     spring_constant_list = SpringConstant()
