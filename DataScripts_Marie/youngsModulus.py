@@ -27,7 +27,7 @@ def func_pyramidal(x, E, c0):
     theta = np.pi/4
     return c0 + ((np.tan(theta))/np.sqrt(2))*(E/(1-v**2))*x**2
 
-def fitYoungsModulus(F, delta, argmin_list, substrate_contact_list, indenter='pyramidal'):
+def fitYoungsModulus(F, delta, contact_point_list, substrate_contact_list, indenter='pyramidal'):
     # R_c: radius of tip curvature
     # F: force
     # delta: indentation
@@ -44,7 +44,7 @@ def fitYoungsModulus(F, delta, argmin_list, substrate_contact_list, indenter='py
         func = func_pyramidal
     for k in range(len(F)):
         #perc_top = 95
-        slice_bottom = argmin_list[k]
+        slice_bottom = contact_point_list[k]
         slice_top = substrate_contact_list[k]
         delt = delta[k][0]*10**(-6)
         f = F[k][0]*10**(-9)

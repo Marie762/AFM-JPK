@@ -21,17 +21,13 @@ from youngsModulus import fitYoungsModulus
 d, F, t = force()
 F_bS = baselineSubtraction(F)
 d_hC = heightCorrection(d)
-
-#contact_point_list = contactPoint1(F_bS, d_hC, plot='True')
-standard_deviation_list, contact_point_list = contactPoint3(F_bS, d_hC, plot='True')
-print(contact_point_list)
-
+contact_point_list = contactPoint3(F_bS, d_hC)
+substrate_contact_list = substrateContact(F_bS, d_hC)
 d_hZ = heightZeroAtContactPoint(d_hC, contact_point_list)
 
-# M, B = substrateLinearFit(F_bS, d_hC, plot='True')
-#substrate_contact_list = substrateContact(F_bS, d_hC)
 
-#penetrationPoint(F_bS, d_hC, plot='True')
+
+penetrationPoint(F_bS, d_hC, plot='True')
 
 # delta = tipDisplacement(F_bS, d_hC, plot='True')
 # delta_hC = heightCorrection(delta)
