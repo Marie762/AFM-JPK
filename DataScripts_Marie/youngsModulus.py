@@ -5,12 +5,9 @@ Created on Tue Apr 19 2024
 @author: marie
 """
 
-from tkinter import X
 import matplotlib.pylab as plt
 import numpy as np
 from scipy.optimize import curve_fit
-from contactPoint import contactPoint1
-from plot import Fdsubplot
 
 def func_power_law(x, a, b, c):
     return c +  a * (x**b)

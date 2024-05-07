@@ -11,7 +11,7 @@ import pandas as pd
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightZeroAtContactPoint, tipDisplacement, smoothingSG
 from plot import Fd, Fdsubplot, QIMap
-from contactPoint import contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, substrateLinearFit, substrateContact
+from contactPoint import contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3, substrateContact, penetrationPoint
 from metadata import Sensitivity, SpringConstant, Speed
 from youngsModulus import fitYoungsModulus
 
@@ -22,20 +22,25 @@ d, F, t = force()
 F_bS = baselineSubtraction(F)
 d_hC = heightCorrection(d)
 
-argmin_list = contactPoint1(F_bS, d_hC)
-d_hZ = heightZeroAtContactPoint(d_hC, argmin_list)
+#contact_point_list = contactPoint1(F_bS, d_hC, plot='True')
+standard_deviation_list, contact_point_list = contactPoint3(F_bS, d_hC, plot='True')
+print(contact_point_list)
+
+d_hZ = heightZeroAtContactPoint(d_hC, contact_point_list)
 
 # M, B = substrateLinearFit(F_bS, d_hC, plot='True')
-substrate_contact_list = substrateContact(F_bS, d_hC)
+#substrate_contact_list = substrateContact(F_bS, d_hC)
 
-delta = tipDisplacement(F_bS, d_hC, plot='True')
-delta_hC = heightCorrection(delta)
-delta_hZ = heightZeroAtContactPoint(delta_hC, argmin_list)
+#penetrationPoint(F_bS, d_hC, plot='True')
+
+# delta = tipDisplacement(F_bS, d_hC, plot='True')
+# delta_hC = heightCorrection(delta)
+# delta_hZ = heightZeroAtContactPoint(delta_hC, contact_point_list)
 
 
 
 # find apparant Youngs modulus
-#popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, argmin_list, substrate_contact_list) # indenter='parabolic', 'conical', or 'pyramidal'
+#popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list) # indenter='parabolic', 'conical', or 'pyramidal'
 
 plt.show()
 
