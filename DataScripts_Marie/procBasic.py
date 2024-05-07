@@ -55,7 +55,7 @@ def heightZeroAtContactPoint(d, argmin_list):
         d_hZ.append(d_hZ_local)
     return d_hZ
 
-def tipDisplacement(F,d):
+def tipDisplacement(F,d, plot='False', save='False'):
     delta = []
     spring_constant_list = SpringConstant()
     for k in range(len(F)):
@@ -78,6 +78,17 @@ def tipDisplacement(F,d):
             delta2 = z2 + deflection2
             delta_local.append(delta2*10**(6))
         delta.append(delta_local)
+        
+        if plot == 'True':
+            fig, ax = plt.subplots()
+            ax.plot(d[k][0], F[k][0], 'deepskyblue')
+            ax.plot(d[k][1], F[k][1], 'deepskyblue')
+            ax.plot(delta[k][0], F[k][0], 'r')
+            ax.plot(delta[k][1], F[k][1], 'r')
+            ax.set(xlabel='height measured (blue) and indentation (red) (um)', ylabel='force (nN)', title='Force-delta curve %i' % k)
+            if save == 'True':
+                fig.savefig('Results\Fdelta_' + str(k) + '.png')
+    
     return delta
 
 
