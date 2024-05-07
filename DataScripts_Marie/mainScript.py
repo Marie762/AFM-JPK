@@ -23,6 +23,8 @@ F_bS = baselineSubtraction(F)
 
 argmin_list = contactPoint1(F_bS,d)
 
+d_hC = heightCorrection(d)
+d_hZ = heightZeroAtContactPoint(d_hC, argmin_list)
 
 delta = tipDisplacement(F_bS, d)
 delta_hC = heightCorrection(delta)
@@ -31,18 +33,19 @@ delta_hZ = heightZeroAtContactPoint(delta_hC, argmin_list)
 
 
 # find apparant Youngs modulus
-#popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, argmin_list) # [slice_bottom:slice_top]
+popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, argmin_list) # [slice_bottom:slice_top]
 
-E, fig = variationYoungsModulus(F, delta_hZ, argmin_list, indenter='parabolic')
+# E, fig = variationYoungsModulus(F, delta_hZ, argmin_list, indenter='parabolic')
  
-# k = 0
-# fig, ax = plt.subplots()
-# ax.plot(delta[k][0], F_bS[k][0], 'deepskyblue')
-# ax.plot(delta[k][1], F_bS[k][1], 'deepskyblue')
-# ax.plot(delta_hC[k][0], F_bS[k][0], 'r')
-# ax.plot(delta_hC[k][1], F_bS[k][1], 'r')
-# ax.set(xlabel='tip-sample distance (m)', ylabel='force (N)', title='Force-delta curve %i' % k)
-# # fig.savefig('Results\Fdelta_' + str(k) + '.png')
+# for k in range(len(F_bS)):
+#     fig, ax = plt.subplots()
+#     ax.plot(d_hZ[k][0], F_bS[k][0], 'deepskyblue')
+#     ax.plot(d_hZ[k][1], F_bS[k][1], 'deepskyblue')
+#     ax.plot(delta_hZ[k][0], F_bS[k][0], 'r')
+#     ax.plot(delta_hZ[k][1], F_bS[k][1], 'r')
+#     ax.set(xlabel='height measured (blue) and indentation (red) (um)', ylabel='force (nN)', title='Force-delta curve %i' % k)
+#     fig.savefig('Results\Fdelta_' + str(k) + '.png')
+
 plt.show()
 
 ################################################################################

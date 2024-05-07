@@ -48,13 +48,14 @@ def fitYoungsModulus(F, delta, argmin_list):
         f = F[k][0]*10**(-9)
         popt, pcov = curve_fit(func_pyramid, delt[slice_bottom:slice_top], f[slice_bottom:slice_top],  maxfev = 100000)
         popt_list.append(popt)
-        print(k, popt)
+        print(k, popt[0])
         
         fig, ax = plt.subplots()
         ax.plot(delt, f, 'r') # F_bS[k][0]
         ax.plot(delt[slice_bottom:slice_top], func_pyramid(delt[slice_bottom:slice_top], *popt), 'orange')
-        ax.set(xlabel='tip-sample distance (m)', ylabel='force (N)', title='Force-delta curve %i' % k)
-    
+        ax.set(xlabel='indentation (m)', ylabel='force (N)', title='Force-delta curve for pyramidal indenter %i' % k)
+        fig.savefig('Results\Fdelta_E_pyramidal' + str(k) + '.png')
+
     # F = (4/3)*np.sqrt(R_c)*(E/(1-v**2))*delta**(3/2)
     # E = (parabolic_fit_param*3*(1-v**2))/(4*np.sqrt(R_c))
     return popt_list, fig
