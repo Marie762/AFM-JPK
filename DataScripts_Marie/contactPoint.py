@@ -122,3 +122,57 @@ def QIcontactPoint2(F,d):
         contact_point_height.append(contact_point_height_cols)
     
     return contact_point_height
+
+def substrateLinearFit(F, d, perc_bottom=98, plot='False', saveplot='False'):
+    # two empty lists to store the gradients 'm' and constants 'b' of the linear fit function for each curve
+    M = []
+    B = []
+    for i in range(len(F)):
+        slice_bottom = round((perc_bottom/100)*len(F[i][0]))
+        m,b = np.polyfit(d[i][0][slice_bottom:], F[i][0][slice_bottom:], 1) # linear fit of first ..% of dataset
+        M.append(m) # store in lists
+        B.append(b)
+        
+        if plot == 'True':
+            x = d[i][0]
+            lin_fit = m*x + b
+            fig, ax = plt.subplots()
+            ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
+            ax.plot(x[slice_bottom:], lin_fit[slice_bottom:], 'orange', label='linear fit line')
+            ax.plot(d[i][0][slice_bottom:], F[i][0][slice_bottom:], 'red', label='part of curve used in the linear fit')
+            ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
+            plt.legend(loc="upper left")
+            if saveplot == 'True':
+                fig.savefig('Results\Fd_substrate_linearfit_' + str(i) + '.png')
+    
+    return M, B
+
+def substrateContact(F, d, perc_bottom=98, plot='False', saveplot='False'):
+    substrate_contact_list = []
+    M, B = substrateLinearFit(F,d, perc_bottom=perc_bottom)
+    plot_bottom = 96
+    for i in range(len(F)):
+        difference_list = []
+        for j in range(len(F[i][0])):
+            f = M[i]*(d[i][0][j]) + B[i] # linear fit line
+            difference_squared = (F[i][0][j] - f)**2 # the difference-swuared between the force value and the value of the linear fit line at each point
+            difference_list.append(difference_squared)
+        
+        argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 500][0]
+    
+        substrate_contact_list.append(argmin_val)
+    
+        if plot == 'True':
+            x = d[i][0]
+            lin_fit = M[i]*x + B[i]
+            slice_bottom = round((plot_bottom/100)*len(F[i][0]))
+            fig, ax = plt.subplots()
+            ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
+            ax.plot(x[slice_bottom:], lin_fit[slice_bottom:], 'orange', label='linear fit line')
+            ax.plot(d[i][0][argmin_val], F[i][0][argmin_val], 'ro', label='hard substrate contact point estimation')
+            ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
+            plt.legend(loc="upper left")
+            if saveplot == 'True':
+                fig.savefig('Results\Fd_substrate_contact_' + str(i) + '.png')
+    
+    return substrate_contact_list

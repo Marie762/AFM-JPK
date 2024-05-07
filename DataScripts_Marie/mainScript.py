@@ -11,7 +11,7 @@ import pandas as pd
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightZeroAtContactPoint, tipDisplacement, smoothingSG
 from plot import Fd, Fdsubplot, QIMap
-from contactPoint import contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2
+from contactPoint import contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, substrateLinearFit, substrateContact
 from metadata import Sensitivity, SpringConstant, Speed
 from youngsModulus import fitYoungsModulus, func_power_law,  func_parabolic, func_conical, variationYoungsModulus
 
@@ -20,11 +20,13 @@ from youngsModulus import fitYoungsModulus, func_power_law,  func_parabolic, fun
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 d, F, t = force()
 F_bS = baselineSubtraction(F)
-
-argmin_list = contactPoint1(F_bS,d)
-
 d_hC = heightCorrection(d)
+
+argmin_list = contactPoint1(F_bS, d_hC)
 d_hZ = heightZeroAtContactPoint(d_hC, argmin_list)
+
+# M, B = substrateLinearFit(F_bS, d_hC, plot='True')
+substrate_contact_list = substrateContact(F_bS, d_hC)
 
 delta = tipDisplacement(F_bS, d)
 delta_hC = heightCorrection(delta)
@@ -33,7 +35,7 @@ delta_hZ = heightZeroAtContactPoint(delta_hC, argmin_list)
 
 
 # find apparant Youngs modulus
-popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, argmin_list) # [slice_bottom:slice_top]
+popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, argmin_list, substrate_contact_list) # [slice_bottom:slice_top]
 
 # E, fig = variationYoungsModulus(F, delta_hZ, argmin_list, indenter='parabolic')
  
