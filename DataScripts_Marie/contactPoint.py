@@ -211,11 +211,11 @@ def substrateContact(F, d, perc_bottom=98, plot='False', saveplot='False'):
 def penetrationPoint(F, d, plot='False', saveplot='False'):
     substrate_contact_list = substrateContact(F, d)
     contact_point_list = contactPoint3(F,d)
-    P0,P1,P2,P3,P4,P5 = [],[],[],[],[],[]
+    P0,P1,P2,P3,P4,P5 = [],[],[],[],[],[] #,P4,P5 ,[],[]
     for k in range(len(F)):
         slice_top = substrate_contact_list[k]
         slice_bottom = contact_point_list[k]
-        p0,p1,p2,p3,p4,p5 = np.polyfit(d[k][0][slice_bottom:slice_top], F[k][0][slice_bottom:slice_top], 5)
+        p0,p1,p2,p3,p4,p5 = np.polyfit(d[k][0][slice_bottom:slice_top], F[k][0][slice_bottom:slice_top], 5) #,p4,p5
         print(p0,p1,p2,p3,p4,p5)
         P0.append(p0) # store in lists
         P1.append(p1)
@@ -228,13 +228,14 @@ def penetrationPoint(F, d, plot='False', saveplot='False'):
         
         if plot == 'True':
             x = d[k][0]
-            poly_fit = p0*x**5 + p1*x**4 + p2*x**3 + p3*x**2 + p4*x + p5
+            poly_fit = p0*x**5 + p1*x**4 + p2*x**3 + p3*x**2 + p4*x + p5 # p0*x**3 + p1*x**2 + p2*x + p3
             fig, ax = plt.subplots()
             ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
             ax.plot(d[k][0][slice_bottom:slice_top], F[k][0][slice_bottom:slice_top], 'red', label='part of curve used in the poly-fit')
             ax.plot(x[slice_bottom:slice_top], poly_fit[slice_bottom:slice_top], 'orange', label='5th order polynomial fit')
             ax.plot(x[slice_bottom:slice_top], dP(x[slice_bottom:slice_top]), 'green', label='1st derivative of polynomial fit')
             ax.plot(x[slice_bottom:slice_top], dP2(x[slice_bottom:slice_top]), 'purple', label='2nd derivative of polynomial fit')
+            ax.grid()
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
             plt.legend(loc="upper left")
             if saveplot == 'True':
