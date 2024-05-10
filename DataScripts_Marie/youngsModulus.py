@@ -55,6 +55,8 @@ def fitYoungsModulus(F, delta, contact_point_list, substrate_contact_list, inden
         fig, ax = plt.subplots()
         ax.plot(delt, f, 'r') # F_bS[k][0]
         ax.plot(delt[slice_bottom:slice_top], func(delt[slice_bottom:slice_top], *popt), 'orange')
+        ax.plot(delt[slice_bottom], f[slice_bottom], 'ro', label='cell contact point estimation')
+        ax.plot(delt[slice_top], f[slice_top], 'go', label='hard substrate contact point estimation')
         ax.set(xlabel='indentation (m)', ylabel='force (N)', title='Force-delta curve for pyramidal indenter %i' % k)
         fig.savefig('Results\Fdelta_E_pyramidal' + str(k) + '.png')
 

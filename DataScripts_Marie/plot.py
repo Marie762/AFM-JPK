@@ -63,15 +63,15 @@ def Ftsubplot(F, t, F_sub, colour1='blue', colour2='orangered', colour3='indigo'
             fig.savefig('Results\Ft_' + subplot_name + '_' + str(k) + '.png')
     return fig
 
-def QIMap(data, ind, col, k, save='False'):
+def QIMap(data, ind, col, k, save='False', name = '_'):
     dataframe_qmap = pd.DataFrame(data=data, index=ind, columns=col)
     fig, ax = plt.subplots()
     # ax = sns.heatmap(dataframe_qmap)
-    im = ax.imshow(dataframe_qmap, origin='lower', extent=(col[0], col[-1], ind[0], ind[-1]), interpolation='gaussian', cmap='viridis')  #interpolation='gaussian'
+    im = ax.imshow(dataframe_qmap, origin='lower', extent=(col[0], col[-1], ind[0], ind[-1]), interpolation='gaussian', cmap='Blues')  #interpolation='gaussian'
     fig.colorbar(im, ax=ax, label='Height (um)')
-    ax.set(xlabel='x (um)', ylabel='y (um)', title='QI map ' + str(k))
+    ax.set(xlabel='x (um)', ylabel='y (um)', title='QI map ' + name + ' ' + str(k))
     if save == 'True':
-        fig.savefig('Results\QIMap_' + str(k) + '.png')
+        fig.savefig('Results\QIMap_' + name + str(k) + '.png')
     return fig
 
 # left, right, bottom, top
