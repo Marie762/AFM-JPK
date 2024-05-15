@@ -67,7 +67,7 @@ def QIMap(data, ind, col, k, save='False', name = '_'):
     dataframe_qmap = pd.DataFrame(data=data, index=ind, columns=col)
     fig, ax = plt.subplots()
     # ax = sns.heatmap(dataframe_qmap)
-    im = ax.imshow(dataframe_qmap, origin='lower', extent=(col[0], col[-1], ind[0], ind[-1]), interpolation='gaussian', cmap='Blues')  #interpolation='gaussian'
+    im = ax.imshow(dataframe_qmap, origin='lower', extent=(col[0], col[-1], ind[0], ind[-1]), interpolation='gaussian', cmap='Blues_r')  #vmin = 8.75, vmax = 10.5, interpolation='gaussian'
     fig.colorbar(im, ax=ax, label='Height (um)')
     ax.set(xlabel='x (um)', ylabel='y (um)', title='QI map ' + name + ' ' + str(k))
     if save == 'True':

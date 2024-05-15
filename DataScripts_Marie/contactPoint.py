@@ -100,6 +100,7 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
     # empty list to store the index of the last intersection point of the F-d curve with the linear fit line 
     contact_point_list = []
     standard_deviation_list = []
+    argmax_store = 0
     for i in range(len(F)):
         deviation_list = []
         slice_bottom = round((perc_bottom/100)*len(F[i][0]))
@@ -111,19 +112,25 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             deviation_list.append(deviation_squared)
         standard_deviation = np.sqrt(np.sum(deviation_list[slice_bottom:slice_top])/len(F[i][0][slice_bottom:slice_top]))
         standard_deviation_list.append(standard_deviation)
-            
+        
         argmax_val = [i for i,el in enumerate(deviation_list[slice_bottom:]) if abs(np.sqrt(el)) > multiple*standard_deviation]
         if len(argmax_val) != 0:
-                argmax_val = argmax_val[0]
+                argmax_val = argmax_val[0] + slice_bottom
                 m = multiple
         else:
             argmax_val = [i for i,el in enumerate(deviation_list[slice_bottom:]) if abs(np.sqrt(el)) > multiple1*standard_deviation]
             if len(argmax_val) != 0:
-                argmax_val = argmax_val[0]
+                argmax_val = argmax_val[0] + slice_bottom
                 m = multiple1
             else:
-                argmax_val = [i for i,el in enumerate(deviation_list[slice_bottom:]) if abs(np.sqrt(el)) > multiple2*standard_deviation][0]
-                m = multiple2
+                argmax_val = [i for i,el in enumerate(deviation_list[slice_bottom:]) if abs(np.sqrt(el)) > multiple2*standard_deviation]
+                if len(argmax_val) != 0:
+                    argmax_val = argmax_val[0] + slice_bottom
+                    m = multiple2
+                else:
+                    argmax_val = argmax_store
+        
+        argmax_store = argmax_val
         
         argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.0001]
         if len(argmin_val) != 0:
@@ -133,14 +140,19 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             if len(argmin_val) != 0:
                 argmin_val = argmin_val[-1]
             else:
-                argmin_val = argmax_val
-                print(i, argmax_val)
+                argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.01]
+                if len(argmin_val) != 0:
+                    argmin_val = argmin_val[-1]
+                else:
+                    argmin_val = argmax_val
+                    print(i, argmax_val)
                 
         contact_point_list.append(argmin_val)
 
         if plot == 'True':
             fig, ax = plt.subplots()
             ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
+            ax.plot(d[i][0][slice_bottom:slice_top], F[i][0][slice_bottom:slice_top], 'm', label='percentage of curve used')
             ax.plot(d[i][0], M[i]*(d[i][0]) + B[i], 'orange', label='linear fit line')
             ax.plot(d[i][0][argmin_val], F[i][0][argmin_val], 'ro', label='contact point estimation 3')
             ax.plot(d[i][0][argmax_val], F[i][0][argmax_val], 'go', label= '%i x standard deviation' % m)
