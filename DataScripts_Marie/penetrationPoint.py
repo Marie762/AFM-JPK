@@ -67,24 +67,36 @@ def substrateContact(F, d, perc_bottom=98, plot='False', saveplot='False'):
 def penetrationPoint(F, d, plot='False', saveplot='False'):
     substrate_contact_list = substrateContact(F, d)
     contact_point_list = contactPoint3(F,d)
-    P0,P1,P2,P3,P4,P5 = [],[],[],[],[],[] #,P4,P5 ,[],[]
+    P0,P1,P2,P3,P4,P5 = [],[],[],[],[],[]
+    dP_real_roots, dP2_real_roots = [],[]
     for k in range(len(F)):
         slice_top = substrate_contact_list[k]
         slice_bottom = contact_point_list[k]
         p0,p1,p2,p3,p4,p5 = np.polyfit(d[k][0][slice_bottom:slice_top], F[k][0][slice_bottom:slice_top], 5) #,p4,p5
-        print(p0,p1,p2,p3,p4,p5)
         P0.append(p0) # store in lists
         P1.append(p1)
         P2.append(p2)
         P3.append(p3)
         P4.append(p4)
         P5.append(p5)
-        dP = np.polyder(np.poly1d([p0,p1,p2,p3,p4,p5]), 1)
-        dP2 = np.polyder(np.poly1d([p0,p1,p2,p3,p4,p5]), 2)
         
+        dP = np.polyder(np.poly1d([p0,p1,p2,p3,p4,p5]), 1)
+        dP_roots_local = np.roots(dP)
+        for i in range(len(dP_roots_local)):
+            dP_real_imag = [el for i,el in enumerate(dP_roots_local) if abs(np.imag(el)) < 1e-5]
+            dP_real = np.real(dP_real_imag)
+        dP_real_roots.append(dP_real)
+        
+        dP2 = np.polyder(np.poly1d([p0,p1,p2,p3,p4,p5]), 2)
+        dP2_roots_local = np.roots(dP2)
+        for i in range(len(dP2_roots_local)):
+            dP2_real_imag = [el for i,el in enumerate(dP2_roots_local) if abs(np.imag(el)) < 1e-5]
+            dP2_real = np.real(dP2_real_imag)
+        dP2_real_roots.append(dP2_real)
+
         if plot == 'True':
             x = d[k][0]
-            poly_fit = p0*x**5 + p1*x**4 + p2*x**3 + p3*x**2 + p4*x + p5 # p0*x**3 + p1*x**2 + p2*x + p3
+            poly_fit = p0*x**5 + p1*x**4 + p2*x**3 + p3*x**2 + p4*x + p5
             fig, ax = plt.subplots()
             ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
             ax.plot(d[k][0][slice_bottom:slice_top], F[k][0][slice_bottom:slice_top], 'red', label='part of curve used in the poly-fit')
@@ -97,4 +109,4 @@ def penetrationPoint(F, d, plot='False', saveplot='False'):
             if saveplot == 'True':
                 fig.savefig('Results\Fd_3rd_order_polyfit_' + str(k) + '.png')
     
-    return
+    return dP_real_roots, dP2_real_roots

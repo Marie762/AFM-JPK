@@ -27,19 +27,33 @@ substrate_contact_list = substrateContact(F_bS, d_hC)
 d_hZ = heightZeroAtContactPoint(d_hC, contact_point_list)
 
 
+dP_real_roots, dP2_real_roots = penetrationPoint(F_bS, d_hC, plot='True') # plot='True'
 
-penetrationPoint(F_bS, d_hC, plot='True')
+dP_n_roots, dP2_n_roots = [],[]
+for k in range(len(dP_real_roots)):
+    dP_number_of_roots = len(dP_real_roots[k])
+    dP2_number_of_roots = len(dP2_real_roots[k])
+    
+    dP_n_roots.append(dP_number_of_roots)
+    dP2_n_roots.append(dP2_number_of_roots)
+    
+    print(k, ':', 'dP=', dP_n_roots[k], 'dP2=', dP2_n_roots[k])
 
-delta = tipDisplacement(F_bS, d_hC)
-#delta_hC = heightCorrection(delta)
-delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
 
 
+# print(1, dP_roots[1], dP2_roots[1])
+# print(2, dP_roots[2], dP2_roots[2])
+# print(3, dP_roots[3], dP2_roots[3])
+# print(4, dP_roots[4], dP2_roots[4])
 
-# find apparant Youngs modulus
-popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list) # indenter='parabolic', 'conical', or 'pyramidal'
+# delta = tipDisplacement(F_bS, d_hC)
+# #delta_hC = heightCorrection(delta)
+# delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
 
-plt.show()
+# # find apparant Youngs modulus
+# popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list) # indenter='parabolic', 'conical', or 'pyramidal'
+
+# plt.show()
 
 ################################################################################
 
