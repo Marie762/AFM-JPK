@@ -82,6 +82,7 @@ def penetrationPoint(F, d, plot='False', saveplot='False'):
         
         dP = np.polyder(np.poly1d([p0,p1,p2,p3,p4,p5]), 1)
         dP_roots_local = np.roots(dP)
+        print(k, dP_roots_local)
         for i in range(len(dP_roots_local)):
             dP_real_imag = [el for i,el in enumerate(dP_roots_local) if abs(np.imag(el)) < 1e-5]
             dP_real = np.real(dP_real_imag)
@@ -89,6 +90,7 @@ def penetrationPoint(F, d, plot='False', saveplot='False'):
         
         dP2 = np.polyder(np.poly1d([p0,p1,p2,p3,p4,p5]), 2)
         dP2_roots_local = np.roots(dP2)
+        print(k,dP2_roots_local)
         for i in range(len(dP2_roots_local)):
             dP2_real_imag = [el for i,el in enumerate(dP2_roots_local) if abs(np.imag(el)) < 1e-5]
             dP2_real = np.real(dP2_real_imag)

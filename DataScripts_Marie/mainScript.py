@@ -10,9 +10,9 @@ import seaborn as sns
 import pandas as pd
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightZeroAtContactPoint, tipDisplacement, smoothingSG
-from plot import Fd, Fdsubplot, QIMap
+from plot import Fd, FdGrid, Fdsubplot, QIMap
 from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3
-from metadata import Sensitivity, SpringConstant, Speed
+from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from youngsModulus import fitYoungsModulus
 from penetrationPoint import substrateContact, penetrationPoint
 
@@ -20,31 +20,77 @@ from penetrationPoint import substrateContact, penetrationPoint
 
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 d, F, t = force()
-F_bS = baselineSubtraction(F)
-d_hC = heightCorrection(d)
-contact_point_list = contactPoint3(F_bS, d_hC)
-substrate_contact_list = substrateContact(F_bS, d_hC)
-d_hZ = heightZeroAtContactPoint(d_hC, contact_point_list)
+
+G0 = [d[0:99],F[0:99]]
+G1 = [d[100:199],F[100:199]]
+G2 = [d[200:299],F[200:299]]
+G3 = [d[300:399],F[300:399]]
+G4 = [d[400:499],F[400:499]]
+G5 = [d[500:599],F[500:599]]
+G6 = [d[600:699],F[600:699]]
+G7 = [d[700:719],F[700:719]]
+G8 = [d[720:1119],F[720:1119]]
+
+F_bS0 = baselineSubtraction(G0[1])
+d_hC0 = heightCorrection(G0[0])
+contact_point_list = contactPoint1(F_bS0, d_hC0, perc_top=70)
+
+x_position_list, y_position_list = Position()
+
+contact_point_height = [] 
+for n in range(0,10):
+    lower = n*10
+    higher = lower + 10
+    for m in range(len(d_hC0)):
+        contact_point_height_cols = []
+        if lower <= m < higher:
+            contact_point_height_cols.append(d_hC0[m][contact_point_list[m]])
+
+    contact_point_height.append(contact_point_height_cols)
+
+x_position = x_position_list[0:99]
+y_position = y_position_list[0:99]
+
+k = 0
+
+fig = FdGrid(contact_point_height, x_position, y_position, k)
+
+# F_bS = baselineSubtraction(F)
+# d_hC = heightCorrection(d)
+# contact_point_list = contactPoint1(F_bS, d_hC, perc_top=70, plot='True', saveplot='True')
+# substrate_contact_list = substrateContact(F_bS, d_hC)  
+# d_hZ = heightZeroAtContactPoint(d_hC, contact_point_list)
 
 
-dP_real_roots, dP2_real_roots = penetrationPoint(F_bS, d_hC, plot='True') # plot='True'
 
-dP_n_roots, dP2_n_roots = [],[]
-for k in range(len(dP_real_roots)):
-    dP_number_of_roots = len(dP_real_roots[k])
-    dP2_number_of_roots = len(dP2_real_roots[k])
+
+
+# # convert metadata to csv file:
+# x_position_list, y_position_list = Position()
+
+# data = {'X Position (um/s)': x_position_list, 'Y Position (um/s)': y_position_list}
+# # Create a DataFrame 
+# data_frame = pd.DataFrame(data) 
+
+# # Save DataFrame to CSV file 
+# data_frame.to_csv('Results_metadata\metadata_output.csv', index=False, encoding='utf-8')
+
+
+
+
+
+# dP_real_roots, dP2_real_roots = penetrationPoint(F_bS, d_hC, plot='True') # plot='True'
+
+# dP_n_roots, dP2_n_roots = [],[]
+# for k in range(len(dP_real_roots)):
+#     dP_number_of_roots = len(dP_real_roots[k])
+#     dP2_number_of_roots = len(dP2_real_roots[k])
     
-    dP_n_roots.append(dP_number_of_roots)
-    dP2_n_roots.append(dP2_number_of_roots)
+#     dP_n_roots.append(dP_number_of_roots)
+#     dP2_n_roots.append(dP2_number_of_roots)
     
-    print(k, ':', 'dP=', dP_n_roots[k], 'dP2=', dP2_n_roots[k])
+#     print(k, ':', 'dP=', dP_n_roots[k], 'dP2=', dP2_n_roots[k])
 
-
-
-# print(1, dP_roots[1], dP2_roots[1])
-# print(2, dP_roots[2], dP2_roots[2])
-# print(3, dP_roots[3], dP2_roots[3])
-# print(4, dP_roots[4], dP2_roots[4])
 
 # delta = tipDisplacement(F_bS, d_hC)
 # #delta_hC = heightCorrection(delta)
@@ -53,7 +99,7 @@ for k in range(len(dP_real_roots)):
 # # find apparant Youngs modulus
 # popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list) # indenter='parabolic', 'conical', or 'pyramidal'
 
-# plt.show()
+
 
 ################################################################################
 

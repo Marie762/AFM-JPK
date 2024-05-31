@@ -71,6 +71,7 @@ def contactPoint1(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             plt.legend(loc="upper right")
             if saveplot == 'True':
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
+            plt.close()
     
     return contact_point_list
 
@@ -90,6 +91,7 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
             ax.plot(d[i][0][argmin_val], F_bS[i][0][argmin_val], 'ro', label='contact point estimation 2')
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
+            plt.show()
             if saveplot == 'True':
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
     
@@ -158,6 +160,7 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             ax.plot(d[i][0][argmax_val], F[i][0][argmax_val], 'go', label= '%i x standard deviation' % m)
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
+            plt.show()
             if saveplot == 'True':
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
     
