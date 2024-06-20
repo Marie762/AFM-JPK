@@ -42,6 +42,18 @@ def heightCorrection(d):
         d_hC.append(d_hC_local)
     return d_hC
 
+def heightCorrection2(d):
+    d_hC = []
+    for k in range(len(d)):
+        d_hC_local = []
+        value_last_element = d[k][0][-1]
+        d_hC_local.append((d[k][0] - value_last_element))
+        d_hC_local.append((d[k][1] - value_last_element))
+        if len(d[k]) > 2:
+            d_hC_local.append((d[k][2] - value_last_element))
+        d_hC.append(d_hC_local)
+    return d_hC
+
 def heightZeroAtContactPoint(d, argmin_list):
     d_hZ = []
     for k in range(len(d)):

@@ -64,7 +64,8 @@ def contactPoint1(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
 
         if plot == 'True':
             fig, ax = plt.subplots()
-            ax.plot(d[i][0], F_bS[i][0], 'deepskyblue', label='force-distance curve')
+            ax.plot(d[i][0], F_bS[i][0], 'deepskyblue', label='force-distance extend curve')
+            ax.plot(d[i][1], F_bS[i][1], 'skyblue', label='force-distance retract curve')
             ax.plot(d[i][0], M[i]*(d[i][0]) + B[i], 'orange', label='linear fit line')
             ax.plot(d[i][0][argmin_val], F_bS[i][0][argmin_val], 'ro', label='contact point estimation 1')
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
@@ -160,10 +161,9 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             ax.plot(d[i][0][argmax_val], F[i][0][argmax_val], 'go', label= '%i x standard deviation' % m)
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
-            plt.show()
             if saveplot == 'True':
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
-    
+            plt.close()
     return contact_point_list
 
 def QIcontactPoint1(F, d, perc_bottom=0, perc_top=50):
