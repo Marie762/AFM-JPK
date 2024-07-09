@@ -9,13 +9,15 @@ import matplotlib.pylab as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
+from scipy.signal import find_peaks
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, tipDisplacement, smoothingSG
 from plot import Fd, FdGrid, Fdsubplot, QIMap
 from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
+from createGrid import grid10x10, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
-from penetrationPoint import substrateContact, penetrationPoint
+from penetrationPoint import substrateContact, penetrationPoint, findPeaks
 
 ###### Fd ###############################################################################
 
@@ -24,84 +26,25 @@ d, F, t = force()
 
 F_bS = baselineSubtraction(F)
 d_hC = heightCorrection2(d)
-contact_point_list = contactPoint3(F_bS, d_hC,multiple=30, multiple1=20, plot='True', saveplot='True') #, plot='True', saveplot='True'
+contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=30, multiple1=20, plot='True', saveplot='True') #, plot='True', saveplot='True'
 
-contact_point_height =[]
-for n in range(len(d_hC)):
-    contact_point_height.append(d_hC[n][0][contact_point_list[n]])
+# contact_point_height =[]
+# for n in range(len(d_hC)):
+#     contact_point_height.append(d_hC[n][0][contact_point_list[n]])
 
-        
-# create data array from contact point list
-# 10x10
-c0 = contact_point_height[:10]
-c1 = contact_point_height[10:20]
-r1 = c1[::-1]
-c2 = contact_point_height[20:30]
-c3 = contact_point_height[30:40]
-r3 = c3[::-1]
-c4 = contact_point_height[40:50]
-c5 = contact_point_height[50:60]
-r5 = c5[::-1]
-c6 = contact_point_height[60:70]
-c7 = contact_point_height[70:80]
-r7 = c7[::-1]
-c8 = contact_point_height[80:90]
-c9 = contact_point_height[90:]
-r9 = c9[::-1]
-data = [c0,r1,c2,r3,c4,r5,c6,r7,c8,r9]
-
-# # 25x25
-# c0 = contact_point_height[:25]
-# c1 = contact_point_height[25:50]
-# r1 = c1[::-1]
-# c2 = contact_point_height[50:75]
-# c3 = contact_point_height[75:100]
-# r3 = c3[::-1]
-# c4 = contact_point_height[100:125]
-# c5 = contact_point_height[125:150]
-# r5 = c5[::-1]
-# c6 = contact_point_height[150:175]
-# c7 = contact_point_height[175:200]
-# r7 = c7[::-1]
-# c8 = contact_point_height[200:225]
-# c9 = contact_point_height[225:250]
-# r9 = c9[::-1]
-# c10 = contact_point_height[250:275]
-# c11 = contact_point_height[275:300]
-# r11 = c11[::-1]
-# c12 = contact_point_height[300:325]
-# c13 = contact_point_height[325:350]
-# r13 = c13[::-1]
-# c14 = contact_point_height[350:375]
-# c15 = contact_point_height[375:400]
-# r15 = c15[::-1]
-# c16 = contact_point_height[400:425]
-# c17 = contact_point_height[425:450]
-# r17 = c17[::-1]
-# c18 = contact_point_height[450:475]
-# c19 = contact_point_height[475:500]
-# r19 = c19[::-1]
-# c20 = contact_point_height[500:525]
-# c21 = contact_point_height[525:550]
-# r21 = c21[::-1]
-# c22 = contact_point_height[550:575]
-# c23 = contact_point_height[575:600]
-# r23 = c23[::-1]
-# c24 = contact_point_height[600:]
-
-# data = [c0,r1,c2,r3,c4,r5,c6,r7,c8,r9,c10,r11,c12,r13,c14,r15,c16,r17,c18,r19,c20,r21,c22,r23,c24]
-
-# metadata
-x_position_list, y_position_list = Position()
-x_and_y_data = x_position_list[0:10] # 10x10
-# x_and_y_data = x_position_list[0:25] # 25x25
-
-# spring_constant_list = SpringConstant()
+first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, saveplot=True)
+print(number_of_peaks_list)
+plt.show()
 
 # create grid plot
-k = 5 
-fig = FdGrid(data, x_and_y_data, x_and_y_data, k, save='True')
+k=0
+grid_data, x_and_y_data = grid25x25(number_of_peaks_list)
+fig = FdGrid(grid_data, x_and_y_data, x_and_y_data, k, save='True',interpolation=None, name='number of peaks')
 plt.show() 
+
+
+
+
 
 # substrate_contact_list = substrateContact(F_bS, d_hC)  
 # d_hZ = heightZeroAtContactPoint(d_hC, contact_point_list)

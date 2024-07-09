@@ -7,6 +7,7 @@ Created on Friday May 10 2024
 
 import matplotlib.pylab as plt
 import numpy as np
+from scipy.signal import find_peaks
 from contactPoint import contactPoint1, contactPoint2, contactPoint3
 
 
@@ -112,3 +113,40 @@ def penetrationPoint(F, d, plot='False', saveplot='False'):
                 fig.savefig('Results\Fd_3rd_order_polyfit_' + str(k) + '.png')
     
     return dP_real_roots, dP2_real_roots
+
+def findPeaks(F, d, contact_point_list, plot=False, saveplot=False):
+    first_peak_list = []
+    number_of_peaks_list = []
+    all_peaks_list = []
+    for k in range(len(F)):
+        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=0.3)
+        peaks = peaks + contact_point_list[k]
+        if len(peaks) != 0:
+            first_peak_list.append(peaks[0])
+            number_of_peaks_list.append(len(peaks))
+            all_peaks_list.append(peaks)
+            if plot:
+                fig, ax = plt.subplots()
+                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
+                ax.plot(d[k][0][peaks], F[k][0][peaks], 'yo', label='peaks identified')
+                ax.plot(d[k][0][peaks[0]], F[k][0][peaks[0]], 'bo', label='first peak identified')
+                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
+                ax.text(2.5, 3, '# of peaks = %i' % len(peaks), fontsize=12)
+                plt.legend(loc="upper right")
+                if saveplot:
+                    fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                plt.close()
+        else:
+            first_peak_list.append(None)
+            number_of_peaks_list.append(0)
+            all_peaks_list.append(None)
+            if plot:
+                fig, ax = plt.subplots()
+                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
+                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
+                ax.text(2.5, 3, '# of peaks = 0', fontsize=12)
+                plt.legend(loc="upper right")
+                if saveplot:
+                    fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                plt.close()
+    return first_peak_list, number_of_peaks_list, all_peaks_list
