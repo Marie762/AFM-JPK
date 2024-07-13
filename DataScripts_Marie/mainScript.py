@@ -9,7 +9,6 @@ import matplotlib.pylab as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from scipy.signal import find_peaks
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, tipDisplacement, smoothingSG
 from plot import Fd, FdGrid, Fdsubplot, QIMap
@@ -17,7 +16,7 @@ from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontac
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from createGrid import grid10x10, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
-from penetrationPoint import substrateContact, penetrationPoint, findPeaks
+from penetrationPoint import indentationDepth, substrateContact, findPeaks
 
 ###### Fd ###############################################################################
 
@@ -26,31 +25,36 @@ d, F, t = force()
 
 F_bS = baselineSubtraction(F)
 d_hC = heightCorrection2(d)
-contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=30, multiple1=20, plot='True', saveplot='True') #, plot='True', saveplot='True'
+delta = tipDisplacement(F_bS, d_hC)
 
+contact_point_list = contactPoint3(F_bS, delta, perc_top=50,multiple=30, multiple1=20)
+substrate_contact_list = substrateContact(F_bS, delta, contact_point_list)  
+
+
+# find height data for height grid plot
 # contact_point_height =[]
-# for n in range(len(d_hC)):
-#     contact_point_height.append(d_hC[n][0][contact_point_list[n]])
+# for n in range(len(delta)):
+#     contact_point_height.append(delta[n][0][contact_point_list[n]])
 
-first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, saveplot=True)
-print(number_of_peaks_list)
-plt.show()
+# find penetration points
+first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, delta, contact_point_list)
+
+# Also find force drop...
+
+# find indentation depth
+#  indentation_depth_arr = indentationDepth(F, delta, contact_point_list, first_peak_list)
+
+# find apparant Youngs modulus
+delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
+popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, 
+                                  plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
+
 
 # create grid plot
-k=0
-grid_data, x_and_y_data = grid25x25(number_of_peaks_list)
-fig = FdGrid(grid_data, x_and_y_data, x_and_y_data, k, save='True',interpolation=None, name='number of peaks')
+k=10
+grid_data, x_and_y_data = grid10x10(popt_list) # height: contact_point_height, peaks: number_of_peaks_list
+fig = FdGrid(grid_data, x_and_y_data, x_and_y_data, k, save='True',interpolation=None, name='Apparent Youngs modulus (kPa)')
 plt.show() 
-
-
-
-
-
-# substrate_contact_list = substrateContact(F_bS, d_hC)  
-# d_hZ = heightZeroAtContactPoint(d_hC, contact_point_list)
-
-
-
 
 
 # # convert metadata to csv file:
@@ -78,14 +82,6 @@ plt.show()
 #     dP2_n_roots.append(dP2_number_of_roots)
     
 #     print(k, ':', 'dP=', dP_n_roots[k], 'dP2=', dP2_n_roots[k])
-
-
-# delta = tipDisplacement(F_bS, d_hC)
-# #delta_hC = heightCorrection(delta)
-# delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
-
-# # find apparant Youngs modulus
-# popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list) # indenter='parabolic', 'conical', or 'pyramidal'
 
 
 
