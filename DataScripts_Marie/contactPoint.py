@@ -5,6 +5,8 @@ Created on Tue Apr 3 2024
 @author: marie
 """
 
+import copy
+import time
 import matplotlib.pylab as plt
 import numpy as np
 from procBasic import baselineSubtraction, heightCorrection
@@ -20,7 +22,7 @@ def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot='False', saveplot='
         M.append(m) # store in lists
         B.append(b)
         
-        if plot == 'True':
+        if plot :
             x = d[i][0]
             lin_fit = m*x + b
             fig, ax = plt.subplots()
@@ -29,7 +31,7 @@ def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot='False', saveplot='
             ax.plot(d[i][0][slice_bottom:slice_top], F[i][0][slice_bottom:slice_top], 'red', label='part of curve used in the linear fit')
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
-            if saveplot == 'True':
+            if saveplot :
                 fig.savefig('Results\Fd_baseline_linearfit_' + str(i) + '.png')
     
     return M, B
@@ -62,7 +64,7 @@ def contactPoint1(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
         
         contact_point_list.append(argmin_val)
 
-        if plot == 'True':
+        if plot :
             fig, ax = plt.subplots()
             ax.plot(d[i][0], F_bS[i][0], 'deepskyblue', label='force-distance extend curve')
             ax.plot(d[i][1], F_bS[i][1], 'skyblue', label='force-distance retract curve')
@@ -70,7 +72,7 @@ def contactPoint1(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             ax.plot(d[i][0][argmin_val], F_bS[i][0][argmin_val], 'ro', label='contact point estimation 1')
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
-            if saveplot == 'True':
+            if saveplot :
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
             plt.close()
     
@@ -86,19 +88,98 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
         argmin_val = argmin_val + slice_bottom
         contact_point_list.append(argmin_val)
 
-        if plot == 'True':
+        if plot :
             fig, ax = plt.subplots()
             ax.plot(d[i][0], F_bS[i][0], 'deepskyblue', label='force-distance curve')
             ax.plot(d[i][0][argmin_val], F_bS[i][0][argmin_val], 'ro', label='contact point estimation 2')
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
             plt.show()
-            if saveplot == 'True':
+            if saveplot :
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
     
     return contact_point_list
 
-def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=50, multiple=4, multiple1=3, multiple2=2):
+def contactPoint_derivative(F, D):
+
+
+    for i,(f,d) in enumerate(zip(F,D)):
+        if i < 2:
+            continue
+
+        f_ext, _ = f[0], f[1]
+        d_ext, _ = d[0], d[1]
+        
+
+        import torch
+        # d_ext is x, f_ext is y
+        d_ext = -d_ext
+
+        ## tandardise d_ext and f_ext
+        d_ext = (d_ext - d_ext.min()) / (d_ext.max() - d_ext.min())
+        f_ext = (f_ext - f_ext.min()) / (f_ext.max() - f_ext.min())
+
+        x = torch.tensor(d_ext, requires_grad=True, dtype=torch.float32)
+        y = torch.tensor(f_ext, requires_grad=True, dtype=torch.float32)
+
+
+        loss_fn = torch.nn.L1Loss()
+        learning_rate = 1e-1
+        num_restarts = 15
+
+        best_loss = float('inf')
+        best_model_state = None
+        overall_best_loss = float('inf')
+        overall_best_model_state = None
+
+        for i in range(num_restarts):
+            model = torch.nn.Sequential(
+                torch.nn.Linear(1, 1),
+                torch.nn.PReLU(),
+            )
+
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+            scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=350, gamma=0.1) 
+
+            best_loss = float('inf')
+            best_model_state = None
+        
+            for _ in range(3000):
+                shuffled_indices = torch.randperm(len(x))
+                shuffled_indices = shuffled_indices[:len(x)//10]
+                x_shuffled = x[shuffled_indices]
+                y_shuffled = y[shuffled_indices]
+                y_pred = model(x_shuffled[:, None])
+                loss = loss_fn(y_pred, y_shuffled[:, None])
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                scheduler.step()
+
+                validation_loss = loss_fn(model(x[:, None]), y[:, None])
+                if validation_loss < best_loss:
+                    best_loss = validation_loss
+                    best_model_state = copy.deepcopy(model.state_dict())
+
+
+            if best_loss < overall_best_loss:
+                overall_best_loss = best_loss
+                overall_best_model_state = best_model_state
+        
+            print(f"Progress: {i+1}/{num_restarts}, best loss: {overall_best_loss:.3f}", end='\r')
+            
+        model.load_state_dict(overall_best_model_state)
+        print(f"Overall best loss after {num_restarts} restarts: {overall_best_loss:.3f}")
+        print(model[0].weight, model[0].bias)
+        plt.plot(d_ext, f_ext, label='data')
+        plt.plot(d_ext, model(x[:, None]).detach().numpy(), label='model')
+        plt.legend()
+        plt.show()
+
+        time.sleep(2)
+        plt.close()
+
+def contactPoint3(F, d, plot = False, save = False, perc_bottom=0, perc_top=50, multiple=4, multiple1=3, multiple2=2): ## TODO: Turn lists of arrays into arrays
     M, B = baselineLinearFit(F, d, perc_bottom=perc_bottom, perc_top=perc_top)
     # empty list to store the index of the last intersection point of the F-d curve with the linear fit line 
     contact_point_list = []
@@ -108,7 +189,7 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
         deviation_list = []
         slice_bottom = round((perc_bottom/100)*len(F[i][0]))
         slice_top = round((perc_top/100)*len(F[i][0]))
-        # calculate standard deviation
+        # calculate standard deviation ## TODO: Vectorize this
         for j in range(len(F[i][0])):
             f = M[i]*(d[i][0][j]) + B[i] # linear fit line
             deviation_squared = (F[i][0][j] - f)**2 # the difference-squared between the force value and the value of the linear fit line at each point
@@ -152,7 +233,8 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
                 
         contact_point_list.append(argmin_val)
 
-        if plot == 'True':
+        print(f"Force-distance curve {i}: contact point estimation 3: {argmin_val} x standard deviation: {m}", end='\r')
+        if plot :
             fig, ax = plt.subplots()
             ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
             ax.plot(d[i][0][slice_bottom:slice_top], F[i][0][slice_bottom:slice_top], 'm', label='percentage of curve used')
@@ -161,7 +243,7 @@ def contactPoint3(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             ax.plot(d[i][0][argmax_val], F[i][0][argmax_val], 'go', label= '%i x standard deviation' % m)
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
-            if saveplot == 'True':
+            if save :
                 fig.savefig('Results\Fd_contact_point_' + str(i) + '.png')
             plt.close()
     return contact_point_list
