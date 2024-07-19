@@ -102,10 +102,7 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
 
 def contactPoint_derivative(F, D):
 
-
     for i,(f,d) in enumerate(zip(F,D)):
-        if i < 2:
-            continue
 
         f_ext, _ = f[0], f[1]
         d_ext, _ = d[0], d[1]
@@ -119,64 +116,69 @@ def contactPoint_derivative(F, D):
         d_ext = (d_ext - d_ext.min()) / (d_ext.max() - d_ext.min())
         f_ext = (f_ext - f_ext.min()) / (f_ext.max() - f_ext.min())
 
-        x = torch.tensor(d_ext, requires_grad=True, dtype=torch.float32)
-        y = torch.tensor(f_ext, requires_grad=True, dtype=torch.float32)
+        if i < 3:
+            continue
+        ## Fit piecewise linear model scipy
+        from scipy.optimize import curve_fit
 
-
-        loss_fn = torch.nn.L1Loss()
-        learning_rate = 1e-1
-        num_restarts = 15
-
-        best_loss = float('inf')
-        best_model_state = None
-        overall_best_loss = float('inf')
-        overall_best_model_state = None
-
-        for i in range(num_restarts):
-            model = torch.nn.Sequential(
-                torch.nn.Linear(1, 1),
-                torch.nn.PReLU(),
-            )
-
-            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-            scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=350, gamma=0.1) 
-
-            best_loss = float('inf')
-            best_model_state = None
+        def piecewise_linear_three_pieces(x, x0, y0, x1, y1, k0, k1, k2):
+            return np.piecewise(x, 
+                                [x < x0, (x >= x0) & (x < x1), x >= x1], 
+                                [lambda x: k0 * x + y0 - k0 * x0,
+                                lambda x: k1 * x + y1 - k1 * x1, ##TODO: no intercept
+                                lambda x: k2 * x + y1 - k2 * x1])
         
-            for _ in range(3000):
-                shuffled_indices = torch.randperm(len(x))
-                shuffled_indices = shuffled_indices[:len(x)//10]
-                x_shuffled = x[shuffled_indices]
-                y_shuffled = y[shuffled_indices]
-                y_pred = model(x_shuffled[:, None])
-                loss = loss_fn(y_pred, y_shuffled[:, None])
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                scheduler.step()
+        def fit_piecewise_linear_three_pieces(d_ext, f_ext, initial_guesses):
+            best_p = None
+            best_e = np.inf  # Set initial error to a large value
+            for guess in initial_guesses:
+                try:
+                    p, _ = curve_fit(piecewise_linear_three_pieces, d_ext, f_ext, p0=guess)
+                    residuals = f_ext - piecewise_linear_three_pieces(d_ext, *p)
+                    ss_res = np.sum(abs(residuals))
+                    if ss_res < best_e:
+                        best_p = p
+                        best_e = ss_res
+                except RuntimeError:
+                    continue
+            return best_p
 
-                validation_loss = loss_fn(model(x[:, None]), y[:, None])
-                if validation_loss < best_loss:
-                    best_loss = validation_loss
-                    best_model_state = copy.deepcopy(model.state_dict())
+        # Generate initial guesses for the breakpoints
+        initial_guesses = []
+        num_guesses = 30  # Number of initial guesses
+        x0_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
+        x1_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
 
+        for x0 in x0_candidates:
+            for x1 in x1_candidates:
+                if x0 < x1:
+                    y0_guess = f_ext[np.abs(d_ext - x0).argmin()]  # Estimate y0 based on closest point
+                    y1_guess = f_ext[np.abs(d_ext - x1).argmin()]  # Estimate y1 based on closest point
+                    k0_guess = (f_ext[1] - f_ext[0]) / (d_ext[1] - d_ext[0])  # Initial slope guess for first segment
+                    k1_guess = (f_ext[-1] - f_ext[0]) / (d_ext[-1] - d_ext[0])  # Initial slope guess for second segment
+                    k2_guess = (f_ext[-1] - f_ext[-2]) / (d_ext[-1] - d_ext[-2])  # Initial slope guess for third segment
+                    initial_guesses.append([x0, y0_guess, x1, y1_guess, k0_guess, k1_guess, k2_guess])
 
-            if best_loss < overall_best_loss:
-                overall_best_loss = best_loss
-                overall_best_model_state = best_model_state
-        
-            print(f"Progress: {i+1}/{num_restarts}, best loss: {overall_best_loss:.3f}", end='\r')
-            
-        model.load_state_dict(overall_best_model_state)
-        print(f"Overall best loss after {num_restarts} restarts: {overall_best_loss:.3f}")
-        print(model[0].weight, model[0].bias)
-        plt.plot(d_ext, f_ext, label='data')
-        plt.plot(d_ext, model(x[:, None]).detach().numpy(), label='model')
-        plt.legend()
-        plt.show()
+        best_p = fit_piecewise_linear_three_pieces(d_ext, f_ext, initial_guesses)
 
-        time.sleep(2)
+        if best_p is not None:
+            xd = np.linspace(d_ext.min(), d_ext.max(), 1000)
+            plt.plot(d_ext, f_ext, label='data')
+            plt.plot(xd, piecewise_linear_three_pieces(xd, *best_p), label='piecewise linear fit', color='red')
+            plt.legend()
+            plt.xlabel('d_ext')
+            plt.ylabel('f_ext')
+            plt.title('Piecewise Linear Regression with Three Segments')
+            plt.show()
+
+            # Print change points
+            change_point1 = best_p[0]
+            change_point2 = best_p[2]
+            print("Change Points (standardized d_ext):", change_point1, change_point2)
+        else:
+            print("No valid fit found.")
+
+        time.sleep(0.1)
         plt.close()
 
 def contactPoint3(F, d, plot = False, save = False, perc_bottom=0, perc_top=50, multiple=4, multiple1=3, multiple2=2): ## TODO: Turn lists of arrays into arrays
