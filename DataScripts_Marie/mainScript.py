@@ -25,10 +25,10 @@ d, F, t = force()
 
 F_bS = baselineSubtraction(F)
 d_hC = heightCorrection2(d)
-# delta = tipDisplacement(F_bS, d_hC)
+delta = tipDisplacement(F_bS, d_hC)
 
-contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=30, multiple1=20)
-# contact_point_list = contactPoint_derivative(F_bS,d_hC)
+# contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=30, multiple1=20)
+contact_point_list = contactPoint_derivative(F_bS,delta)
 # substrate_contact_list = substrateContact(F_bS, delta, contact_point_list, plot=True, save=True)  
 
 # # find height data for height grid plot
