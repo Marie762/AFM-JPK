@@ -11,7 +11,7 @@ import matplotlib.pylab as plt
 import numpy as np
 from procBasic import baselineSubtraction, heightCorrection
 
-def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot='False', saveplot='False'):
+def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot=False, saveplot=False):
     # two empty lists to store the gradients 'm' and constants 'b' of the linear fit function for each curve
     M = []
     B = []
@@ -22,7 +22,7 @@ def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot='False', saveplot='
         M.append(m) # store in lists
         B.append(b)
         
-        if plot :
+        if plot:
             x = d[i][0]
             lin_fit = m*x + b
             fig, ax = plt.subplots()
@@ -31,7 +31,7 @@ def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot='False', saveplot='
             ax.plot(d[i][0][slice_bottom:slice_top], F[i][0][slice_bottom:slice_top], 'red', label='part of curve used in the linear fit')
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
-            if saveplot :
+            if saveplot:
                 fig.savefig('Results\Fd_baseline_linearfit_' + str(i) + '.png')
     
     return M, B
@@ -104,9 +104,6 @@ def contactPoint_derivative(F, D):
 
 
     for i,(f,d) in enumerate(zip(F,D)):
-        if i < 2:
-            continue
-
         f_ext, _ = f[0], f[1]
         d_ext, _ = d[0], d[1]
         
@@ -216,20 +213,20 @@ def contactPoint3(F, d, plot = False, save = False, perc_bottom=0, perc_top=50, 
         
         argmax_store = argmax_val
         
-        argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.0001]
+        # argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.0001]
+        # if len(argmin_val) != 0:
+        #         argmin_val = argmin_val[-1]
+        # else:
+        # argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.001]
+        # if len(argmin_val) != 0:
+        #     argmin_val = argmin_val[-1]
+        # else:
+        argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.01]
         if len(argmin_val) != 0:
-                argmin_val = argmin_val[-1]
+            argmin_val = argmin_val[-1]
         else:
-            argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.001]
-            if len(argmin_val) != 0:
-                argmin_val = argmin_val[-1]
-            else:
-                argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.01]
-                if len(argmin_val) != 0:
-                    argmin_val = argmin_val[-1]
-                else:
-                    argmin_val = argmax_val
-                    print(i, argmax_val)
+            argmin_val = argmax_val
+            print(i, argmax_val)
                 
         contact_point_list.append(argmin_val)
 

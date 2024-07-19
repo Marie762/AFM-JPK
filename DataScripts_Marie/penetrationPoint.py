@@ -85,12 +85,12 @@ def substrateContact(F, d, contact_point_list, perc_bottom=98, plot=False, save=
                 plt.close()
     return substrate_contact_list
 
-def findPeaks(F, d, contact_point_list, plot=False, saveplot=False):
+def findPeaks(F, d, contact_point_list, plot=False, save=False):
     first_peak_list = []
     number_of_peaks_list = []
     all_peaks_list = []
     for k in range(len(F)):
-        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=0.1)
+        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=0.05)
         peaks = peaks + contact_point_list[k]
         if len(peaks) != 0:
             first_peak_list.append(peaks[0])
@@ -104,7 +104,7 @@ def findPeaks(F, d, contact_point_list, plot=False, saveplot=False):
                 ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
                 ax.text(2.5, 3, '# of peaks = %i' % len(peaks), fontsize=12)
                 plt.legend(loc="upper right")
-                if saveplot:
+                if save:
                     fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
                 plt.close()
         else:
@@ -117,7 +117,7 @@ def findPeaks(F, d, contact_point_list, plot=False, saveplot=False):
                 ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
                 ax.text(2.5, 3, '# of peaks = 0', fontsize=12)
                 plt.legend(loc="upper right")
-                if saveplot:
+                if save:
                     fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
                 plt.close()
     return first_peak_list, number_of_peaks_list, all_peaks_list
