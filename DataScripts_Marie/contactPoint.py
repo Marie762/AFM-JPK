@@ -102,7 +102,10 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
 
 def contactPoint_derivative(F, D):
 
+
     for i,(f,d) in enumerate(zip(F,D)):
+        if i < 2:
+            continue
 
         f_ext, _ = f[0], f[1]
         d_ext, _ = d[0], d[1]
@@ -116,26 +119,22 @@ def contactPoint_derivative(F, D):
         d_ext = (d_ext - d_ext.min()) / (d_ext.max() - d_ext.min())
         f_ext = (f_ext - f_ext.min()) / (f_ext.max() - f_ext.min())
 
-        if i < 3:
-            continue
         ## Fit piecewise linear model scipy
         from scipy.optimize import curve_fit
 
-        def piecewise_linear_three_pieces(x, x0, y0, x1, y1, k0, k1, k2):
-            return np.piecewise(x, 
-                                [x < x0, (x >= x0) & (x < x1), x >= x1], 
-                                [lambda x: k0 * x + y0 - k0 * x0,
-                                lambda x: k1 * x + y1 - k1 * x1, ##TODO: no intercept
-                                lambda x: k2 * x + y1 - k2 * x1])
-        
-        def fit_piecewise_linear_three_pieces(d_ext, f_ext, initial_guesses):
+        def piecewise_linear_quartic(x, x0, y0, k1, a2, b2, c2, d2):
+            return np.piecewise(x, [x < x0], 
+                                [lambda x: k1 * x + y0 - k1 * x0,
+                                lambda x: a2 * (x - x0)**4 + b2 * (x - x0)**3 + c2 * (x - x0)**2 + d2 * (x - x0) + y0])
+
+        def fit_piecewise_linear_quartic(d_ext, f_ext, initial_guesses):
             best_p = None
             best_e = np.inf  # Set initial error to a large value
             for guess in initial_guesses:
                 try:
-                    p, _ = curve_fit(piecewise_linear_three_pieces, d_ext, f_ext, p0=guess)
-                    residuals = f_ext - piecewise_linear_three_pieces(d_ext, *p)
-                    ss_res = np.sum(abs(residuals))
+                    p, _ = curve_fit(piecewise_linear_quartic, d_ext, f_ext, p0=guess)
+                    residuals = f_ext - piecewise_linear_quartic(d_ext, *p)
+                    ss_res = np.sum(residuals**2)
                     if ss_res < best_e:
                         best_p = p
                         best_e = ss_res
@@ -143,40 +142,37 @@ def contactPoint_derivative(F, D):
                     continue
             return best_p
 
-        # Generate initial guesses for the breakpoints
+        # Generate initial guesses for the breakpoint
         initial_guesses = []
-        num_guesses = 30  # Number of initial guesses
+        num_guesses = 10  # Number of initial guesses
         x0_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
-        x1_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
-
         for x0 in x0_candidates:
-            for x1 in x1_candidates:
-                if x0 < x1:
-                    y0_guess = f_ext[np.abs(d_ext - x0).argmin()]  # Estimate y0 based on closest point
-                    y1_guess = f_ext[np.abs(d_ext - x1).argmin()]  # Estimate y1 based on closest point
-                    k0_guess = (f_ext[1] - f_ext[0]) / (d_ext[1] - d_ext[0])  # Initial slope guess for first segment
-                    k1_guess = (f_ext[-1] - f_ext[0]) / (d_ext[-1] - d_ext[0])  # Initial slope guess for second segment
-                    k2_guess = (f_ext[-1] - f_ext[-2]) / (d_ext[-1] - d_ext[-2])  # Initial slope guess for third segment
-                    initial_guesses.append([x0, y0_guess, x1, y1_guess, k0_guess, k1_guess, k2_guess])
+            y0_guess = f_ext[np.abs(d_ext - x0).argmin()]  # Estimate y0 based on closest point
+            k1_guess = (f_ext[-1] - f_ext[0]) / (d_ext[-1] - d_ext[0])  # Initial slope guess for linear part
+            a2_guess = 0  # Initial quartic coefficient guess
+            b2_guess = k1_guess  # Initial cubic coefficient for quartic part
+            c2_guess = k1_guess  # Initial quadratic coefficient for quartic part
+            d2_guess = k1_guess  # Initial linear coefficient for quartic part
+            initial_guesses.append([x0, y0_guess, k1_guess, a2_guess, b2_guess, c2_guess, d2_guess])
 
-        best_p = fit_piecewise_linear_three_pieces(d_ext, f_ext, initial_guesses)
+            best_p = fit_piecewise_linear_quartic(d_ext, f_ext, initial_guesses)
 
-        if best_p is not None:
-            xd = np.linspace(d_ext.min(), d_ext.max(), 1000)
-            plt.plot(d_ext, f_ext, label='data')
-            plt.plot(xd, piecewise_linear_three_pieces(xd, *best_p), label='piecewise linear fit', color='red')
-            plt.legend()
-            plt.xlabel('d_ext')
-            plt.ylabel('f_ext')
-            plt.title('Piecewise Linear Regression with Three Segments')
-            plt.show()
 
-            # Print change points
-            change_point1 = best_p[0]
-            change_point2 = best_p[2]
-            print("Change Points (standardized d_ext):", change_point1, change_point2)
-        else:
-            print("No valid fit found.")
+    if best_p is not None:
+        xd = np.linspace(d_ext.min(), d_ext.max(), 1000)
+        plt.plot(d_ext, f_ext, label='data')
+        plt.plot(xd, piecewise_linear_quartic(xd, *best_p), label='piecewise linear-quartic fit', color='red')
+        plt.legend()
+        plt.xlabel('d_ext')
+        plt.ylabel('f_ext')
+        plt.title('Piecewise Linear-Quartic Regression')
+        plt.show()
+
+        # Print change point
+        change_point = best_p[0]
+        print("Change Point (standardized d_ext):", change_point)
+    else:
+        print("No valid fit found.")
 
         time.sleep(0.1)
         plt.close()
