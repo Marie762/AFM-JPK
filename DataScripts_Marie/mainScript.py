@@ -14,7 +14,7 @@ from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, 
 from plot import Fd, FdGrid, Fdsubplot, QIMap
 from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3, contactPoint_derivative
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
-from createGrid import grid10x10, grid20x20, grid25x25
+from createGrid import grid10x10, grid15x15, grid15x15_specialcase, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
 from penetrationPoint import indentationDepth, substrateContact, findPeaks
 
@@ -25,37 +25,46 @@ d, F, t = force()
 
 F_bS = baselineSubtraction(F)
 d_hC = heightCorrection2(d)
-delta = tipDisplacement(F_bS, d_hC)
+# delta = tipDisplacement(F_bS, d_hC)
 
-contact_point_list = contactPoint_derivative(F_bS,delta) # contactPoint3(F_bS, delta, perc_top=50,multiple=30, multiple1=20, plot=True, save=True)
+contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=30, multiple1=20)
+# contact_point_list = contactPoint_derivative(F_bS,d_hC)
 # substrate_contact_list = substrateContact(F_bS, delta, contact_point_list, plot=True, save=True)  
 
-
 # # find height data for height grid plot
-# # contact_point_height =[]
-# # for n in range(len(delta)):
-# #     contact_point_height.append(delta[n][0][contact_point_list[n]])
+# contact_point_height =[]
+# for n in range(len(d_hC)):
+#     contact_point_height.append(d_hC[n][0][contact_point_list[n]])
 
-# # find penetration points
-# first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, delta, contact_point_list)
+
+
+# find penetration points
+first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, save=True)
 
 # # Also find force drop...
 
 # # find indentation depth
-# #  indentation_depth_arr = indentationDepth(F, delta, contact_point_list, first_peak_list)
+# indentation_depth_arr = indentationDepth(F, d_hC, contact_point_list, first_peak_list)
 
-# # find apparant Youngs modulus
+# find apparant Youngs modulus
 # delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
 # popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, 
 #                                   plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
 
 
-# # create grid plot
-# k=10
-# grid_data, x_and_y_data = grid10x10(popt_list) # height: contact_point_height, peaks: number_of_peaks_list
-# fig = FdGrid(grid_data, x_and_y_data, x_and_y_data, k, save='True',interpolation=None, name='Apparent Youngs modulus (kPa)')
+# create grid plot
+k=7
+# grid_data, x_and_y_data = grid10x10(contact_point_height)
+# fig = FdGrid(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um)')
 # plt.show() 
 
+grid_data, x_and_y_data = grid10x10(number_of_peaks_list) # height: contact_point_height, peaks: number_of_peaks_list
+fig = FdGrid(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks')
+plt.show() 
+
+# grid_data, x_and_y_data = grid10x10(indentation_depth_arr) # height: contact_point_height, peaks: number_of_peaks_list
+# fig = FdGrid(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um)')
+# plt.show() 
 
 # # # convert metadata to csv file:
 # # x_position_list, y_position_list = Position()

@@ -30,6 +30,66 @@ def grid10x10(arr):
     x_and_y_data = x_position_list[0:10] # 10x10
     return grid_data, x_and_y_data
 
+def grid15x15(arr):
+    # create data array of 15 by 15 from an array of 225 points
+    c0 = arr[:15]
+    c1 = arr[15:30]
+    r1 = c1[::-1]
+    c2 = arr[30:45]
+    c3 = arr[45:60]
+    r3 = c3[::-1]
+    c4 = arr[60:75]
+    c5 = arr[75:90]
+    r5 = c5[::-1]
+    c6 = arr[90:105]
+    c7 = arr[105:120]
+    r7 = c7[::-1]
+    c8 = arr[120:135]
+    c9 = arr[135:150]
+    r9 = c9[::-1]
+    c10 = arr[150:165]
+    c11 = arr[165:180]
+    r11 = c11[::-1]
+    c12 = arr[180:195]
+    c13 = arr[195:210]
+    r13 = c13[::-1]
+    c14 = arr[210:225]
+
+    grid_data = [c0,r1,c2,r3,c4,r5,c6,r7,c8,r9,c10,r11,c12,r13,c14]
+    # metadata
+    x_position_list, y_position_list = Position()
+    x_and_y_data = x_position_list[0:15] # 15x15
+    return grid_data, x_and_y_data
+
+def grid15x15_specialcase(arr):
+    # create data array of 15 by 15 from an array of 225 points where it stopped at 183/225
+    c0 = arr[:15]
+    c1 = arr[15:30]
+    r1 = c1[::-1]
+    c2 = arr[30:45]
+    c3 = arr[45:60]
+    r3 = c3[::-1]
+    c4 = arr[60:75]
+    c5 = arr[75:90]
+    r5 = c5[::-1]
+    c6 = arr[90:105]
+    c7 = arr[105:120]
+    r7 = c7[::-1]
+    c8 = arr[120:135]
+    c9 = arr[135:150]
+    r9 = c9[::-1]
+    c10 = arr[150:165]
+    c11 = arr[165:180]
+    r11 = c11[::-1]
+    
+    grid_data = [c0,r1,c2,r3,c4,r5,c6,r7,c8,r9,c10,r11]
+    # metadata
+    x_position_list, y_position_list = Position()
+    x_data = x_position_list[0:12] # 12
+    y_data = x_position_list[0:15] # 15
+    return grid_data, x_data, y_data
+
+
 def grid20x20(arr):
     # create data array of 20 by 20 from an array of 400 points
     c0 = arr[:20]
