@@ -74,15 +74,45 @@ def QIMap(data, ind, col, k, save='False', name = '_'):
     return fig
 
 
-def FdGrid(data, x_position, y_position, k, save=False, name = '_', interpolation='gaussian'):
+def FdGrid_Height(data, x_position, y_position, k, save=False, name = '_', interpolation='gaussian'):
     dataframe_qmap = pd.DataFrame(data=data, index=x_position, columns=y_position)
     fig, ax = plt.subplots()
     im = ax.imshow(dataframe_qmap, origin='lower', extent=(y_position[0], y_position[-1], x_position[0], x_position[-1]), 
-                   cmap='Blues_r', interpolation=interpolation)  #, vmin = 0, vmax = 5, vmin = 8.75, vmax = 10.5, interpolation='gaussian', cmap='Blues_r' or 'hot_r'
+                   cmap='Blues_r', interpolation=interpolation, vmin = 0, vmax = 3)  #, vmin = 0, vmax = 5, vmin = 8.75, vmax = 10.5, interpolation='gaussian', cmap='Blues_r' or 'hot_r'
     fig.colorbar(im, ax=ax, label='Height (um)') # height map
-    # fig.colorbar(im, ax=ax, label='Number of peaks') # number of peaks map
-    # fig.colorbar(im, ax=ax, label='Indentation depth (um)') # indentation depth map
-    # fig.colorbar(im, ax=ax, label='Youngs modulus (kPa)') # Youngs modulus map
+    ax.set(xlabel='x (um)', ylabel='y (um)', title='Fd grid ' + name + ' ' + str(k))
+    if save:
+        fig.savefig('Results\AFdGrid_' + name + str(k) + '.png')
+    return fig
+
+def FdGrid_Peaks(data, x_position, y_position, k, save=False, name = '_', interpolation='gaussian'):
+    dataframe_qmap = pd.DataFrame(data=data, index=x_position, columns=y_position)
+    fig, ax = plt.subplots()
+    im = ax.imshow(dataframe_qmap, origin='lower', extent=(y_position[0], y_position[-1], x_position[0], x_position[-1]), 
+                   cmap='hot_r', interpolation=interpolation, vmin = 0, vmax = 5) #, vmin = 8.75, vmax = 10.5, interpolation='gaussian', cmap='Blues_r' or 'hot_r'
+    fig.colorbar(im, ax=ax, label='Number of peaks') # number of peaks map
+    ax.set(xlabel='x (um)', ylabel='y (um)', title='Fd grid ' + name + ' ' + str(k))
+    if save:
+        fig.savefig('Results\AFdGrid_' + name + str(k) + '_p0.2.png')
+    return fig
+
+def FdGrid_Indentation(data, x_position, y_position, k, save=False, name = '_', interpolation='gaussian'):
+    dataframe_qmap = pd.DataFrame(data=data, index=x_position, columns=y_position)
+    fig, ax = plt.subplots()
+    im = ax.imshow(dataframe_qmap, origin='lower', extent=(y_position[0], y_position[-1], x_position[0], x_position[-1]), 
+                   cmap='hot_r', interpolation=interpolation)  #, vmin = 0, vmax = 5, vmin = 8.75, vmax = 10.5, interpolation='gaussian', cmap='Blues_r' or 'hot_r'
+    fig.colorbar(im, ax=ax, label='Indentation depth (um)') # indentation depth map
+    ax.set(xlabel='x (um)', ylabel='y (um)', title='Fd grid ' + name + ' ' + str(k))
+    if save:
+        fig.savefig('Results\AFdGrid_' + name + str(k) + '_p0.2.png')
+    return fig
+
+def FdGrid_Emodulus(data, x_position, y_position, k, save=False, name = '_', interpolation='gaussian'):
+    dataframe_qmap = pd.DataFrame(data=data, index=x_position, columns=y_position)
+    fig, ax = plt.subplots()
+    im = ax.imshow(dataframe_qmap, origin='lower', extent=(y_position[0], y_position[-1], x_position[0], x_position[-1]), 
+                   cmap='hot_r', interpolation=interpolation)  #, vmin = 0, vmax = 5, vmin = 8.75, vmax = 10.5, interpolation='gaussian', cmap='Blues_r' or 'hot_r'
+    fig.colorbar(im, ax=ax, label='Youngs modulus (kPa)') # Youngs modulus map
     ax.set(xlabel='x (um)', ylabel='y (um)', title='Fd grid ' + name + ' ' + str(k))
     if save:
         fig.savefig('Results\AFdGrid_' + name + str(k) + '.png')

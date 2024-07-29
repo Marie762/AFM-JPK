@@ -52,17 +52,15 @@ def SpringConstant():
     return spring_constant_list
 
 def Position():
-    position_list = []
+    x_position_list, y_position_list = [], []
     jpk_reader_list = JPKReaderList()
     dsc = 1e6 # conversion to microns
     for j in range(len(jpk_reader_list)):
-        position = []
         position_x = jpk_reader_list[j].get_metadata(0)['position x']*dsc # in micrometers
         position_y = jpk_reader_list[j].get_metadata(0)['position y']*dsc
-        position.append(position_x)
-        position.append(position_y)
-        position_list.append(position)
-    return position_list
+        x_position_list.append(position_x)
+        y_position_list.append(position_y)
+    return x_position_list, y_position_list
 
 def Speed():
     speed_list = []

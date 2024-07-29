@@ -30,6 +30,24 @@ def grid10x10(arr):
     x_and_y_data = x_position_list[0:10] # 10x10
     return grid_data, x_and_y_data
 
+def grid10x10_specialcase(arr):
+    # create data array of 10 by 10 from an array of 60/100 points
+    c0 = arr[:10]
+    c1 = arr[10:20]
+    r1 = c1[::-1]
+    c2 = arr[20:30]
+    c3 = arr[30:40]
+    r3 = c3[::-1]
+    c4 = arr[40:50]
+    c5 = arr[50:60]
+    r5 = c5[::-1]
+    grid_data = [c0,r1,c2,r3,c4,r5]
+    # metadata
+    x_position_list, y_position_list = Position()
+    x_data = x_position_list[0:6] # 10x10
+    y_data = x_position_list[0:10] # 10x10
+    return grid_data, x_data, y_data
+
 def grid15x15(arr):
     # create data array of 15 by 15 from an array of 225 points
     c0 = arr[:15]
