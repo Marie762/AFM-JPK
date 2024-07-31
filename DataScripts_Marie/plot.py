@@ -8,7 +8,7 @@ Created on Tue Apr 3 2024
 import matplotlib.pylab as plt
 import pandas as pd
 
-def Fd(F, d, save='False'):
+def Fd(F, d, save=False):
     for k in range(len(F)):
         fig, ax = plt.subplots()
         ax.plot(d[k][0], F[k][0], 'deepskyblue')
@@ -16,7 +16,7 @@ def Fd(F, d, save='False'):
         if len(F[k]) > 2:
             ax.plot(d[k][2], F[k][2], 'mediumorchid')
         ax.set(xlabel='height measured (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-        if save == 'True':
+        if save:
             fig.savefig('Results\Fd_' + str(k) + '.png')
     return fig
 

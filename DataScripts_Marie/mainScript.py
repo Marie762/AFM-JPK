@@ -18,6 +18,7 @@ from createGrid import grid10x10, grid10x10_specialcase, grid15x15, grid15x15_sp
 from youngsModulus import fitYoungsModulus
 from penetrationPoint import indentationDepth, substrateContact, findPeaks
 
+
 ###### Fd ###############################################################################
 
 # extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
@@ -57,12 +58,12 @@ k=2
 grid_data, x_and_y_data = grid10x10(contact_point_height) # x_and_y_data        x_data, y_data
 fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
 
-grid_data, x_and_y_data = grid10x10(number_of_peaks_list) # height: contact_point_height, peaks: number_of_peaks_list
-fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
+# grid_data, x_and_y_data = grid10x10(number_of_peaks_list) # height: contact_point_height, peaks: number_of_peaks_list
+# fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
 
-grid_data, x_and_y_data = grid10x10(indentation_depth_arr) # height: contact_point_height, peaks: number_of_peaks_list
-fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ')
-plt.show() 
+# grid_data, x_and_y_data = grid10x10(indentation_depth_arr) # height: contact_point_height, peaks: number_of_peaks_list
+# fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ')
+# plt.show() 
 
 # # # convert metadata to csv file:
 # # x_position_list, y_position_list = Position()
