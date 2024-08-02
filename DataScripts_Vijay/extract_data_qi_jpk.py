@@ -5,13 +5,17 @@ Created on Tue Mar 26 10:57:50 2024
 @author: marie
 """
 import os
-import matplotlib.pylab as plt
 import numpy as np
-import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib import axes, cm
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import afmformats
 import nanite
+import seaborn as sns
+import pandas as pd
 
-sns.set_theme(style="whitegrid", palette="muted")
+
+
 
 allfilesinfolder = os.listdir(r'Data_QI') 
 must_end_in = '.jpk-qi-series'
@@ -19,12 +23,30 @@ jpk_qi_series_files = [os.path.join('Data_QI',file) for file in allfilesinfolder
 
 # create empty list to store all the data extracted from each jpk-force file
 jpk_qi_series_list = []
-    
-# for loop to extract and append all the separate jpk-force data to the list jpk_force_data_list (length equal to the number of files in folder 'Data')
-for i in range(len(jpk_qi_series_files)):
-	data_extract = afmformats.load_data(jpk_qi_series_files[i])
-	jpk_qi_series_list.append(data_extract)
 
-print(jpk_qi_series_list[0][0].columns)
-F = jpk_qi_series_list[0][0]['force']
-print(len(F))
+group = afmformats.AFMGroup("Data_QI\qi_Katerina_500nN_body_great training_150nm_pt40-data-2020.11.18-16.12.55.813-cropped-cropped.jpk-qi-data")
+
+qmap = afmformats.afm_qmap.AFMQMap(group)
+
+
+
+
+
+
+
+
+#print(qmap.group[0].appr['force'])
+#print(qmap.features)
+
+plot_qmap1 = qmap.get_qmap("data: height base point")
+
+x_data = np.around(plot_qmap1[0], decimals=3)
+y_data = np.around(plot_qmap1[1], decimals=3)
+
+print(x_data)
+
+dataframe_qmap = pd.DataFrame(data=plot_qmap1[2], index=y_data, columns=x_data)
+
+ax = sns.heatmap(dataframe_qmap, center=5.94)
+ax.set(xlabel='x (um)', ylabel='y (um)', title='QI map')
+plt.show()

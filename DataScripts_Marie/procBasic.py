@@ -30,6 +30,19 @@ def baselineSubtraction(F):
         F_bS.append(F_bS_local)
     return F_bS
 
+def baselineSubtraction2(F):
+    F_bS = []
+    for k in range(len(F)):
+        F_bS_local = []
+        slice_top = round((10/100)*len(F[k][0]))
+        min_value = np.ndarray.min(F[k][0][:slice_top])
+        F_bS_local.append(F[k][0] - min_value)
+        F_bS_local.append(F[k][1] - min_value)
+        if len(F[k]) > 2:
+            F_bS_local.append(F[k][2] - min_value)
+        F_bS.append(F_bS_local)
+    return F_bS
+
 def heightCorrection(d):
     d_hC = []
     for k in range(len(d)):
