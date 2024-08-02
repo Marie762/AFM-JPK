@@ -11,7 +11,7 @@ import matplotlib.pylab as plt
 import numpy as np
 from procBasic import baselineSubtraction, heightCorrection
 
-def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot=False, saveplot=False):
+def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot='False', saveplot='False'):
     # two empty lists to store the gradients 'm' and constants 'b' of the linear fit function for each curve
     M = []
     B = []
@@ -22,7 +22,7 @@ def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot=False, saveplot=Fal
         M.append(m) # store in lists
         B.append(b)
         
-        if plot:
+        if plot :
             x = d[i][0]
             lin_fit = m*x + b
             fig, ax = plt.subplots()
@@ -31,7 +31,7 @@ def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot=False, saveplot=Fal
             ax.plot(d[i][0][slice_bottom:slice_top], F[i][0][slice_bottom:slice_top], 'red', label='part of curve used in the linear fit')
             ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
             plt.legend(loc="upper right")
-            if saveplot:
+            if saveplot :
                 fig.savefig('Results\Fd_baseline_linearfit_' + str(i) + '.png')
     
     return M, B
@@ -122,18 +122,18 @@ def contactPoint_derivative(F, D):
         ## Fit piecewise linear model scipy
         from scipy.optimize import curve_fit
 
-        def piecewise_linear_quartic(x, x0, y0, k1, a2, b2, c2, d2):
+        def piecewise_linear_cubic(x, x0, y0, k1, a2, b2, c2):
             return np.piecewise(x, [x < x0], 
                                 [lambda x: k1 * x + y0 - k1 * x0,
-                                lambda x: a2 * (x - x0)**4 + b2 * (x - x0)**3 + c2 * (x - x0)**2 + d2 * (x - x0) + y0])
+                                lambda x: a2 * (x - x0)**3 + b2 * (x - x0)**2 + c2 * (x - x0) + y0])
 
-        def fit_piecewise_linear_quartic(d_ext, f_ext, initial_guesses):
+        def fit_piecewise_linear_cubic(d_ext, f_ext, initial_guesses):
             best_p = None
             best_e = np.inf  # Set initial error to a large value
             for guess in initial_guesses:
                 try:
-                    p, _ = curve_fit(piecewise_linear_quartic, d_ext, f_ext, p0=guess)
-                    residuals = f_ext - piecewise_linear_quartic(d_ext, *p)
+                    p, _ = curve_fit(piecewise_linear_cubic, d_ext, f_ext, p0=guess)
+                    residuals = f_ext - piecewise_linear_cubic(d_ext, *p)
                     ss_res = np.sum(residuals**2)
                     if ss_res < best_e:
                         best_p = p
@@ -149,23 +149,23 @@ def contactPoint_derivative(F, D):
         for x0 in x0_candidates:
             y0_guess = f_ext[np.abs(d_ext - x0).argmin()]  # Estimate y0 based on closest point
             k1_guess = (f_ext[-1] - f_ext[0]) / (d_ext[-1] - d_ext[0])  # Initial slope guess for linear part
-            a2_guess = 0  # Initial quartic coefficient guess
-            b2_guess = k1_guess  # Initial cubic coefficient for quartic part
-            c2_guess = k1_guess  # Initial quadratic coefficient for quartic part
-            d2_guess = k1_guess  # Initial linear coefficient for quartic part
-            initial_guesses.append([x0, y0_guess, k1_guess, a2_guess, b2_guess, c2_guess, d2_guess])
+            a2_guess = 0  # Initial cubic coefficient guess
+            b2_guess = k1_guess  # Initial quadratic coefficient for cubic part
+            c2_guess = k1_guess  # Initial linear coefficient for cubic part
+            initial_guesses.append([x0, y0_guess, k1_guess, a2_guess, b2_guess, c2_guess])
 
-            best_p = fit_piecewise_linear_quartic(d_ext, f_ext, initial_guesses)
+        best_p = fit_piecewise_linear_cubic(d_ext, f_ext, initial_guesses)
+
 
 
     if best_p is not None:
         xd = np.linspace(d_ext.min(), d_ext.max(), 1000)
         plt.plot(d_ext, f_ext, label='data')
-        plt.plot(xd, piecewise_linear_quartic(xd, *best_p), label='piecewise linear-quartic fit', color='red')
+        plt.plot(xd, piecewise_linear_cubic(xd, *best_p), label='piecewise linear-cubic fit', color='red')
         plt.legend()
         plt.xlabel('d_ext')
         plt.ylabel('f_ext')
-        plt.title('Piecewise Linear-Quartic Regression')
+        plt.title('Piecewise Linear-Cubic Regression')
         plt.show()
 
         # Print change point
@@ -214,20 +214,20 @@ def contactPoint3(F, d, plot = False, save = False, perc_bottom=0, perc_top=50, 
         
         argmax_store = argmax_val
         
-        # argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.0001]
-        # if len(argmin_val) != 0:
-        #         argmin_val = argmin_val[-1]
-        # else:
-        # argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.001]
-        # if len(argmin_val) != 0:
-        #     argmin_val = argmin_val[-1]
-        # else:
-        argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.01]
+        argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.0001]
         if len(argmin_val) != 0:
-            argmin_val = argmin_val[-1]
+                argmin_val = argmin_val[-1]
         else:
-            argmin_val = argmax_val
-            print(i, argmax_val)
+            argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.001]
+            if len(argmin_val) != 0:
+                argmin_val = argmin_val[-1]
+            else:
+                argmin_val = [i for i,el in enumerate(deviation_list[:argmax_val]) if abs(el) < 0.01]
+                if len(argmin_val) != 0:
+                    argmin_val = argmin_val[-1]
+                else:
+                    argmin_val = argmax_val
+                    print(i, argmax_val)
                 
         contact_point_list.append(argmin_val)
 
