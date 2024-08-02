@@ -40,7 +40,7 @@ def substrateContact(F, d, contact_point_list, perc_bottom=98, plot=False, save=
     M, B = substrateLinearFit(F,d, perc_bottom=perc_bottom)
     plot_bottom = 95
     for i in range(len(F)):
-        if M[i] < -5:
+        if M[i] < -1:
             difference_list = []
             for j in range(len(F[i][0])):
                 f = M[i]*(d[i][0][j]) + B[i] # linear fit line
@@ -79,10 +79,27 @@ def substrateContact(F, d, contact_point_list, perc_bottom=98, plot=False, save=
                 ax.plot(d[i][0][last_index], F[i][0][last_index], 'go', label='hard substrate contact point estimation')
                 ax.plot(d[i][0][contact_point_list[i]], F[i][0][contact_point_list[i]], 'ro', label='=contact point estimation')
                 ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
-                plt.legend(loc="upper left")
+                plt.legend(loc="upper right")
                 if save:
                     fig.savefig('Results\Fd_substrate_contact_' + str(i) + '.png')
                 plt.close()
+    return substrate_contact_list
+
+def substrateContact2(F, d, contact_point_list, plot=False, save=False):
+    substrate_contact_list = []
+    for i in range(len(F)):
+        last_index = len(F[i][0]) - 1
+        substrate_contact_list.append(last_index)
+        if plot:
+            fig, ax = plt.subplots()
+            ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
+            ax.plot(d[i][0][last_index], F[i][0][last_index], 'go', label='hard substrate contact point estimation')
+            ax.plot(d[i][0][contact_point_list[i]], F[i][0][contact_point_list[i]], 'ro', label='=contact point estimation')
+            ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
+            plt.legend(loc="upper right")
+            if save:
+                fig.savefig('Results\Fd_substrate_contact_' + str(i) + '.png')
+            plt.close()
     return substrate_contact_list
 
 def findPeaks(F, d, contact_point_list, plot=False, save=False):
@@ -90,7 +107,7 @@ def findPeaks(F, d, contact_point_list, plot=False, save=False):
     number_of_peaks_list = []
     all_peaks_list = []
     for k in range(len(F)):
-        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=0.2)
+        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=0.05)
         peaks = peaks + contact_point_list[k]
         if len(peaks) != 0:
             first_peak_list.append(peaks[0])

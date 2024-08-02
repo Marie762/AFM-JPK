@@ -101,19 +101,20 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
     return contact_point_list
 
 def contactPoint_derivative(F, D):
-
+    contact_point_list = []
     for i,(f,d) in enumerate(zip(F,D)):
         f_ext, _ = f[0], f[1]
         d_ext, _ = d[0], d[1]
         
-
-        import torch
         # d_ext is x, f_ext is y
         d_ext = -d_ext
 
         ## tandardise d_ext and f_ext
-        d_ext = (d_ext - d_ext.min()) / (d_ext.max() - d_ext.min())
+        d_ext_min = d_ext.min()
+        d_ext_max = d_ext.max()
+        d_ext = (d_ext - d_ext_min) / (d_ext_max - d_ext_min)
         f_ext = (f_ext - f_ext.min()) / (f_ext.max() - f_ext.min())
+        
 
         ## Fit piecewise linear model scipy
         from scipy.optimize import curve_fit
@@ -142,7 +143,7 @@ def contactPoint_derivative(F, D):
 
         # Generate initial guesses for the breakpoints
         initial_guesses = []
-        num_guesses = 30  # Number of initial guesses
+        num_guesses = 6  # Number of initial guesses
         x0_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
         x1_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
 
@@ -166,17 +167,21 @@ def contactPoint_derivative(F, D):
             plt.xlabel('d_ext')
             plt.ylabel('f_ext')
             plt.title('Piecewise Linear Regression with Three Segments')
-            plt.show()
+            plt.savefig('Results\Fd_contact_point_GL_' + str(i) + '.png')
+            plt.close()
 
             # Print change points
-            change_point1 = best_p[0]
-            change_point2 = best_p[2]
+            change_point1 = -((best_p[0]*(d_ext_max - d_ext_min)) + d_ext_min)
+            change_point2 = -((best_p[2]*(d_ext_max - d_ext_min)) + d_ext_min)
             print("Change Points (standardized d_ext):", change_point1, change_point2)
+            contact_point_list.append(change_point1)
         else:
             print("No valid fit found.")
 
         time.sleep(0.1)
         plt.close()
+        
+    return contact_point_list
 
 def contactPoint3(F, d, plot = False, save = False, perc_bottom=0, perc_top=50, multiple=4, multiple1=3, multiple2=2): ## TODO: Turn lists of arrays into arrays
     M, B = baselineLinearFit(F, d, perc_bottom=perc_bottom, perc_top=perc_top)

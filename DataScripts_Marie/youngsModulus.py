@@ -43,7 +43,7 @@ def fitYoungsModulus(F, delta, contact_point_list, substrate_contact_list, first
     if indenter == 'pyramidal':
         func = func_pyramidal
     
-    popt_list = []
+    E_list = []
     for k in range(len(F)):
         # Defining range to fit the Young's modulus
         slice_bottom = contact_point_list[k]
@@ -56,24 +56,31 @@ def fitYoungsModulus(F, delta, contact_point_list, substrate_contact_list, first
         delt = delta[k][0]*10**(-6)
         f = F[k][0]*10**(-9)
         
-        # fitting the curve with the function depending on the geometry of the indenter
-        popt, pcov = curve_fit(func, delt[slice_bottom:slice_top], f[slice_bottom:slice_top],  maxfev = 100000)
-        popt_list.append(popt[0]*10**(-3)) # the first fitting parameter (popt[0]) is the Young's modulus
-        print(k, popt[0]*10**(-3), ' kPa')
+        if slice_top > (slice_bottom+50):
+            # fitting the curve with the function depending on the geometry of the indenter
+            popt, pcov = curve_fit(func, delt[slice_bottom:slice_top], f[slice_bottom:slice_top],  maxfev = 100000)
+            E_modulus = popt[0]*10**(-3)# kPa
+        else:
+            E_modulus = 10 # kPa 
+        
+        E_list.append(E_modulus) # the first fitting parameter (popt[0]) is the Young's modulus
+        print(k, E_modulus, ' kPa')
         
         if plot:
             fig, ax = plt.subplots()
             ax.plot(delt, f, 'r') 
-            ax.plot(delt[slice_bottom:slice_top], func(delt[slice_bottom:slice_top], *popt), 'orange')
+            if slice_top > (slice_bottom+50):
+                ax.plot(delt[slice_bottom:slice_top], func(delt[slice_bottom:slice_top], *popt), 'orange')
             ax.plot(delt[slice_bottom], f[slice_bottom], 'ro', label='cell contact point estimation')
             if first_peak_list[k] is None:
                 ax.plot(delt[slice_top], f[slice_top], 'go', label='hard substrate contact point estimation')
             else:
                 ax.plot(delt[slice_top], f[slice_top], 'bo', label='first penetration point estimation')
             ax.set(xlabel='indentation (m)', ylabel='force (N)', title='Force-delta curve for pyramidal indenter %i' % k)
+            ax.text(2*10**(-6), 0.4*10**(-8), 'E = %.2f kPa' % E_modulus, fontsize=12)
             plt.legend(loc="upper right")
             if save:
                 fig.savefig('Results\Fdelta_E_pyramidal' + str(k) + '.png')
             plt.close()
-    return popt_list, fig
+    return E_list, fig
 

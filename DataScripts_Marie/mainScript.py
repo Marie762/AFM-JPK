@@ -11,12 +11,12 @@ import seaborn as sns
 import pandas as pd
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, tipDisplacement, smoothingSG
-from plot import Fd, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, Fdsubplot, QIMap
+from plot import Fd, FdGrid_Emodulus, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, Fdsubplot, QIMap
 from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3, contactPoint_derivative
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from createGrid import grid10x10, grid10x10_specialcase, grid15x15, grid15x15_specialcase, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
-from penetrationPoint import indentationDepth, substrateContact, findPeaks
+from penetrationPoint import indentationDepth, substrateContact, findPeaks, substrateContact2
 
 
 ###### Fd ###############################################################################
@@ -26,44 +26,48 @@ d, F, t = force()
 
 F_bS = baselineSubtraction(F)
 d_hC = heightCorrection2(d)
-#delta = tipDisplacement(F_bS, d_hC)
+# delta = tipDisplacement(F_bS, d_hC)
 
-contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=30, multiple1=20, plot=True, save=True)
-# contact_point_list = contactPoint_derivative(F_bS,delta)
-# substrate_contact_list = substrateContact(F_bS, delta, contact_point_list, plot=True, save=True)  
+# contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=30, multiple1=20, plot=True, save=True)
+contact_point_list = contactPoint_derivative(F_bS, d_hC)
+# substrate_contact_list = substrateContact(F_bS, delta, contact_point_list)  
 
 # find height data for height grid plot
-contact_point_height =[]
-for n in range(len(d_hC)):
-    contact_point_height.append(d_hC[n][0][contact_point_list[n]])
+# contact_point_height =[]
+# for n in range(len(d_hC)):
+#     contact_point_height.append(d_hC[n][0][contact_point_list[n]])
 
 
 
-# find penetration points
-first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, save=True)
+# # find penetration points
+# first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, save=True)
 
-# # Also find force drop...
+# # # # Also find force drop...
 
-# # find indentation depth
-indentation_depth_arr = indentationDepth(F, d_hC, contact_point_list, first_peak_list)
+# # # # find indentation depth
+# indentation_depth_arr = indentationDepth(F_bS, d_hC, contact_point_list, first_peak_list)
 
-# find apparant Youngs modulus
+# # find apparant Youngs modulus
 # delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
-# popt_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, 
+# E_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, 
 #                                   plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
 
 
 # create grid plot
-k=2
-grid_data, x_and_y_data = grid10x10(contact_point_height) # x_and_y_data        x_data, y_data
+k=1
+grid_data, x_and_y_data = grid15x15(contact_point_list) # x_and_y_data        x_data, y_data
 fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
 
-# grid_data, x_and_y_data = grid10x10(number_of_peaks_list) # height: contact_point_height, peaks: number_of_peaks_list
+# grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
 # fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
 
-# grid_data, x_and_y_data = grid10x10(indentation_depth_arr) # height: contact_point_height, peaks: number_of_peaks_list
+# grid_data, x_and_y_data = grid15x15(indentation_depth_arr) 
 # fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ')
-# plt.show() 
+
+# grid_data, x_and_y_data = grid15x15(E_list)
+# fig = FdGrid_Emodulus(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Youngs modulus (kPa) ')
+
+plt.show() 
 
 # # # convert metadata to csv file:
 # # x_position_list, y_position_list = Position()
