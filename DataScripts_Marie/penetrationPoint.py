@@ -107,7 +107,7 @@ def findPeaks(F, d, contact_point_list, plot=False, save=False):
     number_of_peaks_list = []
     all_peaks_list = []
     for k in range(len(F)):
-        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=0.05)
+        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=1)
         peaks = peaks + contact_point_list[k]
         if len(peaks) != 0:
             first_peak_list.append(peaks[0])

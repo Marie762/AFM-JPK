@@ -61,10 +61,10 @@ def fitYoungsModulus(F, delta, contact_point_list, substrate_contact_list, first
             popt, pcov = curve_fit(func, delt[slice_bottom:slice_top], f[slice_bottom:slice_top],  maxfev = 100000)
             E_modulus = popt[0]*10**(-3)# kPa
         else:
-            E_modulus = 10 # kPa 
+            E_modulus = 20 # kPa 
         
         E_list.append(E_modulus) # the first fitting parameter (popt[0]) is the Young's modulus
-        print(k, E_modulus, ' kPa')
+        # print(k, E_modulus, ' kPa')
         
         if plot:
             fig, ax = plt.subplots()
