@@ -17,7 +17,7 @@ from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontac
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from createGrid import grid10x10, grid10x10_specialcase, grid15x15, grid15x15_specialcase, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
-from penetrationPoint import indentationDepth, substrateContact, findPeaks, substrateContact2
+from penetrationPoint import forceDrop, indentationDepth, substrateContact, findPeaks, substrateContact2
 
 
 ###### Fd ###############################################################################
@@ -29,25 +29,26 @@ F_bS = baselineSubtraction(F)
 d_hC = heightCorrection2(d)
 delta = tipDisplacement(F_bS, d_hC)
 
-k = 9
+k = 1
+date = '2024.07.18_'
 data_path = r'StoredValues/'
-load_from_pickle=False
+load_from_pickle=True
 if not load_from_pickle:
-    contact_point_list = contactPoint3(F_bS, d_hC, perc_top=80,multiple=10, multiple1=3, multiple2=2, plot=True, save=True)
-    # contact_point_fit = contactPoint_derivative(F_bS, d_hC)
-    with open(data_path + '/contactPoint33_'+ str(k) + '.pkl', "wb") as output_file:
-        pickle.dump(contact_point_list, output_file)
+    # contact_point_list = contactPoint3(F_bS, d_hC, perc_top=80,multiple=10, multiple1=3, multiple2=2, plot=True, save=True)
+    contact_point_fit = contactPoint_derivative(F_bS, d_hC)
+    with open(data_path + '/contactPoint_'+ date + str(k) + '.pkl', "wb") as output_file:
+        pickle.dump(contact_point_fit, output_file)
 else:
-    with open(data_path + '/contactPoint33_'+ str(k) + '.pkl', "rb") as output_file:
-        contact_point_list = pickle.load(output_file)
+    with open(data_path + '/contactPoint_'+ date + str(k) + '.pkl', "rb") as output_file:
+        contact_point_fit = pickle.load(output_file)
 
-# # find index in array with closest value to the change point in the fit
-# contact_point_list = []
-# for n in range(len(d_hC)):
-#     array = np.asarray(d_hC[n][0])
-#     value = contact_point_fit[n]
-#     idx = (np.abs(array - value)).argmin()
-#     contact_point_list.append(idx)
+# find index in array with closest value to the change point in the fit
+contact_point_list = []
+for n in range(len(d_hC)):
+    array = np.asarray(d_hC[n][0])
+    value = contact_point_fit[n]
+    idx = (np.abs(array - value)).argmin()
+    contact_point_list.append(idx)
 
 # find height data for height grid plot
 contact_point_height =[]
@@ -57,42 +58,49 @@ for n in range(len(d_hC)):
 substrate_contact_list = substrateContact(F_bS, delta, contact_point_list)
 
 # find penetration points
-first_peak_list, number_of_peaks_list, all_peaks_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, save=True)
+first_peak_list, number_of_peaks_list, all_peaks_list, properties_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, save=True)
 
-# # # # Also find force drop...
+# # # # find penetration force & force drop
+penetration_force_list, right_bases_list, force_drop_list = forceDrop(F_bS, contact_point_list, properties_list)
 
 # # # # find indentation depth
-indentation_depth_arr = indentationDepth(F_bS, d_hC, contact_point_list, first_peak_list)
+# indentation_depth_arr = indentationDepth(F_bS, d_hC, contact_point_list, first_peak_list)
 
-# find apparant Youngs modulus
-delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
-E_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
+# # find apparant Youngs modulus
+# delta_hZ = heightZeroAtContactPoint(delta, contact_point_list)
+# E_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
 
 
-# create grid plot
-grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
-fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
+# # create grid plot
+# grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
+# fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
 
-grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
-fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
+# grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
+# fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
 
-grid_data, x_and_y_data = grid15x15(indentation_depth_arr) 
-fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ')
+# grid_data, x_and_y_data = grid15x15(indentation_depth_arr) 
+# fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ')
 
-grid_data, x_and_y_data = grid15x15(E_list)
-fig = FdGrid_Emodulus(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Youngs modulus (kPa) ')
+# grid_data, x_and_y_data = grid15x15(E_list)
+# fig = FdGrid_Emodulus(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Youngs modulus (kPa) ')
 
-plt.show() 
+# plt.show() 
 
 # # # convert metadata to csv file:
 # # x_position_list, y_position_list = Position()
-
+# prominences_list = []
+# widths_list = []
+# for n in range(len(F_bS)):
+#     prominences_list.append(properties_list[n]["prominences"])
+#     widths_list.append(properties_list[n]["widths"])
+# index = range(len(F_bS))
 # # data = {'X Position (um/s)': x_position_list, 'Y Position (um/s)': y_position_list}
-# # # Create a DataFrame 
-# # data_frame = pd.DataFrame(data) 
+# data = {'Index': index, 'Peak height': peak_height_list, 'Peaks': all_peaks_list, 'Right bases': right_bases_list, 'Force drop' : force_drop_list} # 'Widths': widths_list, 'Prominences': prominences_list,
+# # Create a DataFrame 
+# data_frame = pd.DataFrame(data) 
 
-# # # Save DataFrame to CSV file 
-# # data_frame.to_csv('Results_metadata\metadata_output.csv', index=False, encoding='utf-8')
+# # Save DataFrame to text file 
+# data_frame.to_csv('Results_metadata\metadata_output.csv', index=False, encoding='utf-8')
 
 
 

@@ -106,18 +106,21 @@ def findPeaks(F, d, contact_point_list, plot=False, save=False):
     first_peak_list = []
     number_of_peaks_list = []
     all_peaks_list = []
+    properties_list = []
     for k in range(len(F)):
-        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], prominence=1)
+        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], width=(2, None), distance=30, prominence=0.01, height=(None, None))
         peaks = peaks + contact_point_list[k]
+        properties_list.append(properties)
         if len(peaks) != 0:
             first_peak_list.append(peaks[0])
             number_of_peaks_list.append(len(peaks))
             all_peaks_list.append(peaks)
             if plot:
                 fig, ax = plt.subplots()
-                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
                 ax.plot(d[k][0][peaks], F[k][0][peaks], 'yo', label='peaks identified')
                 ax.plot(d[k][0][peaks[0]], F[k][0][peaks[0]], 'bo', label='first peak identified')
+                ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
+                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
                 ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
                 ax.text(2.5, 3, '# of peaks = %i' % len(peaks), fontsize=12)
                 plt.legend(loc="upper right")
@@ -137,7 +140,27 @@ def findPeaks(F, d, contact_point_list, plot=False, save=False):
                 if save:
                     fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
                 plt.close()
-    return first_peak_list, number_of_peaks_list, all_peaks_list
+    return first_peak_list, number_of_peaks_list, all_peaks_list, properties_list
+
+def forceDrop(F_bS, contact_point_list, properties_list):
+    penetration_force_list = []
+    right_bases_list = []
+    force_drop_list = []
+    for n in range(len(F_bS)):
+        peak_height = properties_list[n]["peak_heights"] # penetration force
+        right_bases = properties_list[n]["right_bases"] # index of base of peak to the right (for this case it would seem to the left)
+        val_list = []
+        for m in range(len(right_bases)):
+            indx = right_bases[m] + contact_point_list[n]
+            val = F_bS[n][0][indx] # value of base of peak to the right
+            val_list.append(val)
+
+        force_drop = peak_height - val_list # the force drop is the difference between the penetration force and the base of the peak to the right 
+        
+        penetration_force_list.append(peak_height)  
+        right_bases_list.append(val_list)
+        force_drop_list.append(force_drop)
+    return penetration_force_list, right_bases_list, force_drop_list
 
 def indentationDepth(F, d, contact_point_list, first_peak_list):
     indentation_depth_arr = np.zeros(len(d)) 
