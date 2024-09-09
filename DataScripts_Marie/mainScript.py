@@ -12,7 +12,7 @@ import pandas as pd
 import pickle
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, tipDisplacement, smoothingSG
-from plot import Fd, FdGrid_Emodulus, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, Fdsubplot, QIMap
+from plot import Fd, FdGrid_Emodulus, FdGrid_ForceDrop, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, FdGrid_PenetrationForce, Fdsubplot, QIMap
 from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3, contactPoint_derivative
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from createGrid import grid10x10, grid10x10_specialcase, grid15x15, grid15x15_specialcase, grid20x20, grid25x25
@@ -30,38 +30,51 @@ d_hC = heightCorrection2(d)
 delta = tipDisplacement(F_bS, d_hC)
 
 k = 1
-date = '2024.07.18_'
-data_path = r'StoredValues/'
-load_from_pickle=True
-if not load_from_pickle:
-    # contact_point_list = contactPoint3(F_bS, d_hC, perc_top=80,multiple=10, multiple1=3, multiple2=2, plot=True, save=True)
-    contact_point_fit = contactPoint_derivative(F_bS, d_hC)
-    with open(data_path + '/contactPoint_'+ date + str(k) + '.pkl', "wb") as output_file:
-        pickle.dump(contact_point_fit, output_file)
-else:
-    with open(data_path + '/contactPoint_'+ date + str(k) + '.pkl', "rb") as output_file:
-        contact_point_fit = pickle.load(output_file)
+date = '2024.07.18'
+data_path = r'StoredValues/' 
+# load_from_pickle=False
+# if not load_from_pickle:
+#     contact_point_fit = contactPoint_derivative(F_bS, d_hC)
+#     with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "wb") as output_file:
+#         pickle.dump(contact_point_fit, output_file)
+# else:
+#     with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
+#         contact_point_fit = pickle.load(output_file)
 
-# find index in array with closest value to the change point in the fit
-contact_point_list = []
-for n in range(len(d_hC)):
-    array = np.asarray(d_hC[n][0])
-    value = contact_point_fit[n]
-    idx = (np.abs(array - value)).argmin()
-    contact_point_list.append(idx)
+# contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=10, multiple1=3, multiple2=2, plot=True, save=True)
+
+
+# # make the perfect contact point fit:
+# with open(data_path + '/real_contact_point_fit_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
+#         real_contact_point_fit = pickle.load(output_file)
+
+
+# # find index in array with closest value to the change point in the fit
+# contact_point_list = []
+# for n in range(len(d_hC)):
+#     array = np.asarray(d_hC[n][0])
+#     value = real_contact_point_fit[n]
+#     diff_abs = np.abs(array - value)
+#     idx = (diff_abs).argmin()
+#     contact_point_list.append(idx) 
+
+with open(data_path + '/real_contact_point_list_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
+        real_contact_point_list = pickle.load(output_file)
+
+# fig = Fd(F_bS, d_hC, real_contact_point_list, real_contact_point_fit, save=True)
 
 # find height data for height grid plot
-contact_point_height =[]
+contact_point_height = []
 for n in range(len(d_hC)):
-    contact_point_height.append(d_hC[n][0][contact_point_list[n]])
+    contact_point_height.append(d_hC[n][0][real_contact_point_list[n]])
 
-substrate_contact_list = substrateContact(F_bS, delta, contact_point_list)
+# substrate_contact_list = substrateContact(F_bS, delta, contact_point_list)
 
 # find penetration points
-first_peak_list, number_of_peaks_list, all_peaks_list, properties_list = findPeaks(F_bS, d_hC, contact_point_list, plot=True, save=True)
+# first_peak_list, number_of_peaks_list, all_peaks_list, properties_list = findPeaks(F_bS, d_hC, contact_point_list) # , plot=True, save=True
 
 # # # # find penetration force & force drop
-penetration_force_list, right_bases_list, force_drop_list = forceDrop(F_bS, contact_point_list, properties_list)
+# penetration_force_list, first_penetration_force_list, right_bases_list, force_drop_list, first_force_drop_list = forceDrop(F_bS, d_hC, contact_point_list, first_peak_list, properties_list, plot=True)
 
 # # # # find indentation depth
 # indentation_depth_arr = indentationDepth(F_bS, d_hC, contact_point_list, first_peak_list)
@@ -71,15 +84,21 @@ penetration_force_list, right_bases_list, force_drop_list = forceDrop(F_bS, cont
 # E_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
 
 
-# # create grid plot
-# grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
-# fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
+# # # create grid plot
+grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
+fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
 
 # grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
 # fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
 
+# grid_data, x_and_y_data = grid15x15(first_penetration_force_list) 
+# fig = FdGrid_PenetrationForce(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Penetration force of 1st peak ')
+
+# grid_data, x_and_y_data = grid15x15(first_force_drop_list) 
+# fig = FdGrid_ForceDrop(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Force drop of 1st peak ') # set NaN values to zero
+
 # grid_data, x_and_y_data = grid15x15(indentation_depth_arr) 
-# fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ')
+# fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ') 
 
 # grid_data, x_and_y_data = grid15x15(E_list)
 # fig = FdGrid_Emodulus(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Youngs modulus (kPa) ')

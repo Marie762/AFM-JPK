@@ -5,6 +5,7 @@ Created on Friday May 10 2024
 @author: marie
 """
 
+from calendar import isleap
 import matplotlib.pylab as plt
 import numpy as np
 from scipy.signal import find_peaks
@@ -142,25 +143,67 @@ def findPeaks(F, d, contact_point_list, plot=False, save=False):
                 plt.close()
     return first_peak_list, number_of_peaks_list, all_peaks_list, properties_list
 
-def forceDrop(F_bS, contact_point_list, properties_list):
+def forceDrop(F, d, contact_point_list, first_peak_list, properties_list, plot=True):
     penetration_force_list = []
     right_bases_list = []
     force_drop_list = []
-    for n in range(len(F_bS)):
-        peak_height = properties_list[n]["peak_heights"] # penetration force
-        right_bases = properties_list[n]["right_bases"] # index of base of peak to the right (for this case it would seem to the left)
+    first_penetration_force_list = []
+    first_force_drop_list = []
+    for k in range(len(F)):
+        peak_height = properties_list[k]["peak_heights"] # penetration force
+        right_bases = properties_list[k]["right_bases"] # index of base of peak to the right (for this case it would seem to the left)
         val_list = []
+        indx_list = []
         for m in range(len(right_bases)):
-            indx = right_bases[m] + contact_point_list[n]
-            val = F_bS[n][0][indx] # value of base of peak to the right
+            indx = right_bases[m] + contact_point_list[k]
+            indx_list.append(indx)
+            val = F[k][0][indx] # value of base of peak to the right
             val_list.append(val)
 
         force_drop = peak_height - val_list # the force drop is the difference between the penetration force and the base of the peak to the right 
         
-        penetration_force_list.append(peak_height)  
+        penetration_force_list.append(peak_height)
         right_bases_list.append(val_list)
         force_drop_list.append(force_drop)
-    return penetration_force_list, right_bases_list, force_drop_list
+        
+        if len(force_drop) >= 1:
+            first_penetration_force = peak_height[0]
+            first_force_drop = force_drop[0]
+        else:
+            first_penetration_force = 0
+            first_force_drop = 0
+        
+        first_penetration_force_list.append(first_penetration_force)
+        first_force_drop_list.append(first_force_drop)
+        
+        if first_peak_list[k]:
+            limit = 100
+            
+            lower_x_lim = indx_list[0] - limit
+            lower_y_lim = indx_list[0] - limit
+            if lower_x_lim < 0:
+                lower_x_lim = 0
+                lower_y_lim = lower_x_lim
+            
+            upper_x_lim = indx_list[0] + limit
+            upper_y_lim = indx_list[0] + limit
+            if upper_x_lim > len(d[k][0]):
+                upper_x_lim = len(d[k][0]) - 1
+                upper_y_lim = upper_x_lim
+            
+            if plot:
+                fig, ax = plt.subplots()
+                ax.plot(d[k][0][first_peak_list[k]], F[k][0][first_peak_list[k]], 'bo', label='first peak')
+                ax.plot(d[k][0][indx_list[0]], F[k][0][indx_list[0]], 'yo', label='base of peak')
+                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
+                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
+                ax.text(d[k][0][lower_x_lim], F[k][0][lower_y_lim], 'Force drop = %.3f' % first_force_drop, fontsize=12)
+                plt.xlim(d[k][0][lower_x_lim], d[k][0][upper_x_lim])
+                plt.ylim(F[k][0][lower_y_lim], F[k][0][upper_y_lim])
+                plt.legend(loc="upper left")
+                fig.savefig('Results\Fd_first_force_drop_' + str(k) + '.png')
+                plt.close()  
+    return penetration_force_list, first_penetration_force_list, right_bases_list, force_drop_list, first_force_drop_list
 
 def indentationDepth(F, d, contact_point_list, first_peak_list):
     indentation_depth_arr = np.zeros(len(d)) 
