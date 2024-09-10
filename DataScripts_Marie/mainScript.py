@@ -13,7 +13,7 @@ import pickle
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, tipDisplacement, smoothingSG
 from plot import Fd, FdGrid_Emodulus, FdGrid_ForceDrop, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, FdGrid_PenetrationForce, Fdsubplot, QIMap
-from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3, contactPoint_derivative, contactPoint_evaluation
+from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint_ruptures, contactPoint3, contactPoint_evaluation, contactPoint_derivative
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from createGrid import grid10x10, grid10x10_specialcase, grid15x15, grid15x15_specialcase, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
@@ -34,7 +34,7 @@ date = '2024.07.18'
 data_path = r'StoredValues/' 
 load_from_pickle=False
 if not load_from_pickle:
-    contact_point_fit = contactPoint_derivative(F_bS, d_hC)
+    contact_point_fit = contactPoint_ruptures(F_bS, d_hC)
     with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "wb") as output_file:
         pickle.dump(contact_point_fit, output_file)
 else:

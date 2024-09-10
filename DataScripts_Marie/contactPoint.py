@@ -79,6 +79,65 @@ def contactPoint1(F, d, plot='False', saveplot='False', perc_bottom=0, perc_top=
             plt.close()
     
     return contact_point_list
+import numpy as np
+import ruptures as rpt
+import matplotlib.pyplot as plt
+
+def contactPoint_ruptures(F, D):
+    contact_point_fit = []
+    
+    for i, (f, d) in enumerate(zip(F, D)):
+        f_ext, _ = f[0], f[1]
+        d_ext, _ = d[0], d[1]
+        
+        # d_ext is x, f_ext is y
+        d_ext = -d_ext
+
+        # Standardize d_ext and f_ext
+        d_ext_min = d_ext.min()
+        d_ext_max = d_ext.max()
+        d_ext = (d_ext - d_ext_min) / (d_ext_max - d_ext_min)
+        f_ext = (f_ext - f_ext.min()) / (f_ext.max() - f_ext.min())
+        
+        # Prepare data for change point detection
+        data = np.column_stack([d_ext, f_ext])
+
+        # Apply KernelCPD with RBF kernel for change point detection
+        model = "l1"  # "l2", "rbf" normal, cosine, mahalanobis, linear
+        # algo = rpt.Pelt(model=model).fit(f_ext)
+        # algo = rpt.Window(width=40, model=model).fit(data)
+        # algo = rpt.Binseg(model='linear').fit(data)
+        algo = rpt.Dynp(model='normal').fit(f_ext)
+        result = algo.predict(n_bkps=1)
+
+        # Get the change point
+        if result:
+            change_point_index = result[0]  # Assuming we are only interested in the first change point
+            change_point_x = d_ext[change_point_index]
+            
+            # De-normalize to get original x value
+            change_point_real = -((change_point_x * (d_ext_max - d_ext_min)) + d_ext_min)
+            contact_point_fit.append(change_point_real)
+
+            # Plotting the original curve and detected change point
+            plt.figure()
+            plt.plot(d_ext, f_ext, 'deepskyblue', label='force-distance curve')
+            plt.axvline(x=change_point_x, color='red', linestyle='--', label='Detected Change Point')
+            plt.xlabel('distance (normalized)')
+            plt.ylabel('force (normalized)')
+            plt.title(f'Change Point Detection for Curve {i}')
+            plt.legend()
+            plt.savefig(f'Results\Fd_contact_point_ruptures_{i}.png')
+            # plt.show()
+
+            print(f"Change point for dataset {i}: {change_point_real}")
+        else:
+            print(f"No change point detected for dataset {i}")
+            contact_point_fit.append(None)
+        
+        plt.close()
+        
+    return contact_point_fit
 
 def contactPoint2(F, d, plot='False', saveplot='False'):
     F_bS = baselineSubtraction(F)
@@ -102,6 +161,7 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
     
     return contact_point_list
 
+
 def contactPoint_derivative(F, D):
     contact_point_fit = []
     for i,(f,d) in enumerate(zip(F,D)):
@@ -121,15 +181,15 @@ def contactPoint_derivative(F, D):
         ## Fit piecewise linear model scipy
         from scipy.optimize import curve_fit
 
-        def piecewise_linear_power(x, x0, y0, k1, a, b, c):
-            return np.piecewise(x, [x < x0], 
-                                [lambda x: k1 * x + y0 - k1 * x0,
-                                lambda x: a + b*np.exp(x - x0)**c])
-        
-        # def piecewise_linear_polynomial(x, x0, y0, k1, a2, a1):
+        # def piecewise_linear_power(x, x0, y0, k1, a, b, c):
         #     return np.piecewise(x, [x < x0], 
         #                         [lambda x: k1 * x + y0 - k1 * x0,
-        #                         lambda x: a2 * (x - x0)**2 + a1 * (x - x0) + y0])
+        #                         lambda x: a + b*np.exp(x - x0)**c])
+        
+        def piecewise_linear_polynomial(x, x0, y0, k1, a8, a7, a6, a5, a4, a3, a2, a1, a0):
+            return np.piecewise(x, [x < x0], 
+                                [lambda x: k1 * x + y0 - k1 * x0,
+                                lambda x: a2 * (x - x0)**2 + a1 * (x - x0) + y0])
             
         # def piecewise_linear_polynomial(x, x0, x1, y0, k1, a2, a1, k3):
         #     return np.piecewise(x, [x < x0, (x >= x0) & (x <= x1), x > x1], 
@@ -177,8 +237,8 @@ def contactPoint_derivative(F, D):
             
             for guess in initial_guesses:
                 try:
-                    p, _ = curve_fit(piecewise_linear_power, d_ext, f_ext, p0=guess)
-                    residuals = f_ext - piecewise_linear_power(d_ext, *p)
+                    p, _ = curve_fit(piecewise_linear_polynomial, d_ext, f_ext, p0=guess)
+                    residuals = f_ext - piecewise_linear_polynomial(d_ext, *p)
                     ss_res = np.sum(residuals**2)
                     if ss_res < best_e:
                         best_p = p
@@ -196,10 +256,16 @@ def contactPoint_derivative(F, D):
         for x0 in x0_candidates:
             y0_guess = f_ext[np.abs(d_ext - x0).argmin()]  # Estimate y0 based on closest point
             k1_guess = (f_ext[-1] - f_ext[0]) / (d_ext[-1] - d_ext[0])  # Initial slope guess for linear part
-            b_guess = 0
-            c_guess = 0
-            initial_guesses.append([x0, y0_guess, k1_guess, b_guess, c_guess])
-
+            a2_guess = np.random.uniform(-1, 1)  # Stochastic initial guess for 7th-order coefficient
+            b2_guess = np.random.uniform(-1, 1)  # Stochastic initial guess for 6th-order coefficient
+            d2_guess = np.random.uniform(-1, 1)  # Stochastic initial guess for 5th-order coefficient
+            e2_guess = np.random.uniform(-1, 1)  # Stochastic initial guess for 4th-order coefficient
+            f2_guess = np.random.uniform(-1, 1)  # Stochastic initial guess for 3rd-order coefficient
+            g2_guess = np.random.uniform(-1, 1)  # Stochastic initial guess for 2nd-order coefficient
+            h2_guess = np.random.uniform(-1, 1)  # Stochastic initial guess for linear term
+            b_shift_guess = np.random.uniform(0.5, 1.0)  # Stochastic shift for the 7th-order term
+            c_shift_guess = np.random.uniform(0.5, 1.0)  # Stochastic shift for the 6th-order term
+            initial_guesses.append([x0, y0_guess, k1_guess, a2_guess, b2_guess, d2_guess, e2_guess, f2_guess, g2_guess, h2_guess, b_shift_guess, c_shift_guess])
         best_p = fit_piecewise_linear_power(d_ext, f_ext, initial_guesses)
         
         # # Generate initial guesses for the breakpoints
@@ -224,8 +290,8 @@ def contactPoint_derivative(F, D):
         if best_p is not None:
             xd = np.linspace(d_ext.min(), d_ext.max(), 1000)
             plt.plot(d_ext, f_ext, 'deepskyblue', label='force-distance curve')
-            plt.plot(xd, piecewise_linear_power(xd, *best_p), label='piecewise linear-powerlaw', color='red')
-            plt.scatter([best_p[0]], [piecewise_linear_power(best_p[0], *best_p)], color='green', s=100, zorder=5, label='Change Point')  
+            plt.plot(xd, piecewise_linear_polynomial(xd, *best_p), label='piecewise linear-powerlaw', color='red')
+            plt.scatter([best_p[0]], [piecewise_linear_polynomial(best_p[0], *best_p)], color='green', s=100, zorder=5, label='Change Point')  
             plt.legend(loc="upper right")
             plt.xlabel('distance (um)')
             plt.ylabel('force (nN)')
@@ -246,6 +312,7 @@ def contactPoint_derivative(F, D):
         plt.close()
         
     return contact_point_fit
+
 
 def contactPoint_evaluation(F, d, contact_point_list):
     k = 1
@@ -276,25 +343,22 @@ def contactPoint_evaluation(F, d, contact_point_list):
         # evaluate estimated height
         if real_height_L <= estimated_height <= real_height_U:
             number_of_points_correct = number_of_points_correct + 1 
-        else:
-            absolute_difference = np.abs(real_height - estimated_height)
-            absolute_difference_squared = absolute_difference**2
-            error_squared_list.append(absolute_difference_squared)
+
+        error_squared_list.append(np.abs(real_height - estimated_height))
     
     # percentage of points correct  
     percentage_of_points_correct = (number_of_points_correct/len(contact_point_list))*100
     
     # Root mean square error (RMSE) calculation
-    sum_error_squared = np.sum(error_squared_list)
-    average_error_squared = sum_error_squared/len(contact_point_list)
-    RMS_error = np.sqrt(average_error_squared)
+    sum_error_squared = np.mean(error_squared_list)
+    RMS_error = sum_error_squared
     
     # plot values
     Fd(F, d, real_contact_point_list, contact_point_list, lower_bound_list, upper_bound_list, save=True)
     # print values
     print('Number of points correct: ', number_of_points_correct)
     print('Percentage of points correct: %.2f ' % percentage_of_points_correct)
-    print('RMS error: ', RMS_error)
+    print('MAD: ', RMS_error)
         
     return number_of_points_correct, percentage_of_points_correct, RMS_error
 
