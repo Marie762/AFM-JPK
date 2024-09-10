@@ -9,7 +9,9 @@ import copy
 import time
 import matplotlib.pylab as plt
 import numpy as np
+import pickle
 from procBasic import baselineSubtraction, heightCorrection
+from plot import Fd
 
 def baselineLinearFit(F, d, perc_bottom=0, perc_top=50, plot=False, save=False):
     # two empty lists to store the gradients 'm' and constants 'b' of the linear fit function for each curve
@@ -124,40 +126,38 @@ def contactPoint_derivative(F, D):
                                 [lambda x: k1 * x + y0 - k1 * x0,
                                 lambda x: a + b*np.exp(x - x0)**c])
         
-        # def piecewise_linear_quadratic(x, x0, y0, k1, a2, b2):
+        # def piecewise_linear_polynomial(x, x0, y0, k1, a2, a1):
         #     return np.piecewise(x, [x < x0], 
         #                         [lambda x: k1 * x + y0 - k1 * x0,
-        #                         lambda x: a2 * (x - x0)**2 + b2 * (x - x0) + y0])
+        #                         lambda x: a2 * (x - x0)**2 + a1 * (x - x0) + y0])
             
-        # def piecewise_linear_quadratic_linear(x, x0, x1, y0, k1, a2, b2, k3):
+        # def piecewise_linear_polynomial(x, x0, x1, y0, k1, a2, a1, k3):
         #     return np.piecewise(x, [x < x0, (x >= x0) & (x <= x1), x > x1], 
         #                         [lambda x: k1 * x + y0 - k1 * x0, # first linear segment
-        #                         lambda x: a2 * (x - x0)**2 + b2 * (x - x0) + y0, # quadratic segment
-        #                         lambda x: k3 * (x - x1) + (a2 * (x1 - x0)**2 + b2 * (x1 - x0) + y0)])  # Second linear segment
-        # Define the piecewise linear and polynomial-exponential function
-        
-        def piecewise_linear_polynomial_exponential(x, x0, y0, k1, a0, a1, a2, a3, a4, b, c):
-            def poly_exp_segment(x, x0, a0, a1, a2, a3, a4, b, c):
-                # Polynomial + Exponential function
-                return a0 + a1 * x + a2 * x**2 + a3 * x**3 + a4 * x**4 + b * np.exp(c * (x - x0))
-            
-            return np.piecewise(x, 
-                                [x < x0, x >= x0], 
-                                [lambda x: k1 * x + (y0 - k1 * x0),  # Linear segment
-                                lambda x: poly_exp_segment(x, x0, a0, a1, a2, a3, a4, b, c) + (y0 - poly_exp_segment(x0, x0, a0, a1, a2, a3, a4, b, c))])  # Polynomial-Exponential segment with offset
+        #                         lambda x: a2 * (x - x0)**2 + a1 * (x - x0) + y0, # quadratic segment
+        #                         lambda x: k3 * (x - x1) + (a2 * (x1 - x0)**2 + a1 * (x1 - x0) + y0)])  # Second linear segment
 
         
-        # def piecewise_linear_polynomial(x, x0, y0, k1, a7, a6, a5, a4, a3, a2, a1, a0):
-        #     def polynomial_segment(x, x0, a7, a6, a5, a4, a3, a2, a1, a0):
-        #         # Polynomial of degree 7
-        #         return (a7 * (x - x0)**7 + a6 * (x - x0)**6 + a5 * (x - x0)**5 + 
-        #                 a4 * (x - x0)**4 + a3 * (x - x0)**3 + a2 * (x - x0)**2 + 
-        #                 a1 * (x - x0) + a0)
+        # def piecewise_linear_polynomial_exponential(x, x0, y0, k1, a0, a1, a2, a3, a4, b, c):
+        #     def poly_exp_segment(x, x0, a0, a1, a2, a3, a4, b, c):
+        #         # Polynomial + Exponential function
+        #         return a0 + a1 * x + a2 * x**2 + a3 * x**3 + a4 * x**4 + b * np.exp(c * (x - x0))
             
         #     return np.piecewise(x, 
         #                         [x < x0, x >= x0], 
         #                         [lambda x: k1 * x + (y0 - k1 * x0),  # Linear segment
-        #                         lambda x: polynomial_segment(x, x0, a7, a6, a5, a4, a3, a2, a1, a0) + y0])  # Polynomial segment
+        #                         lambda x: poly_exp_segment(x, x0, a0, a1, a2, a3, a4, b, c) + (y0 - poly_exp_segment(x0, x0, a0, a1, a2, a3, a4, b, c))])  # Polynomial-Exponential segment with offset
+
+        
+        # def piecewise_linear_polynomial(x, x0, y0, k1, a1, a0):
+        #     def polynomial_segment(x, x0, a1, a0):
+        #         # Polynomial of degree 7
+        #         return (a1 * (x - x0) + a0)
+            
+        #     return np.piecewise(x, 
+        #                         [x < x0, x >= x0], 
+        #                         [lambda x: k1 * x + (y0 - k1 * x0),  # Linear segment
+        #                         lambda x: polynomial_segment(x, x0, a1, a0) + y0])  # Polynomial segment
         
         # # Define the piecewise linear-logarithmic function
         # def piecewise_linear_logarithmic_cubic(x, x0, y0, k1, a3, a2, a1, a0):
@@ -171,14 +171,14 @@ def contactPoint_derivative(F, D):
         #                  lambda x: np.exp(log_polynomial_segment(x, x0, a3, a2, a1, a0)) + (y0 - np.exp(log_polynomial_segment(x0, x0, a3, a2, a1, a0)))])  # Logarithmic segment with offset
         
                 
-        def fit_piecewise_linear_polynomial_exponential(d_ext, f_ext, initial_guesses):
+        def fit_piecewise_linear_power(d_ext, f_ext, initial_guesses):
             best_p = None
             best_e = np.inf  # Set initial error to a large value
             
             for guess in initial_guesses:
                 try:
-                    p, _ = curve_fit(piecewise_linear_polynomial_exponential, d_ext, f_ext, p0=guess)
-                    residuals = f_ext - piecewise_linear_polynomial_exponential(d_ext, *p)
+                    p, _ = curve_fit(piecewise_linear_power, d_ext, f_ext, p0=guess)
+                    residuals = f_ext - piecewise_linear_power(d_ext, *p)
                     ss_res = np.sum(residuals**2)
                     if ss_res < best_e:
                         best_p = p
@@ -191,22 +191,16 @@ def contactPoint_derivative(F, D):
         initial_guesses = []
         num_guesses = 6  # Number of initial guesses
         x0_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
-        # x1_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
+        #x1_candidates = np.linspace(d_ext.min(), d_ext.max(), num_guesses)
 
         for x0 in x0_candidates:
             y0_guess = f_ext[np.abs(d_ext - x0).argmin()]  # Estimate y0 based on closest point
             k1_guess = (f_ext[-1] - f_ext[0]) / (d_ext[-1] - d_ext[0])  # Initial slope guess for linear part
-            c_guess = 0
             b_guess = 0
-            a4_guess = 0
-            a3_guess = 0
-            a2_guess = 0
-            a1_guess = 0
-            a0_guess = 0
-            initial_guesses.append([x0, y0_guess, k1_guess, a0_guess, a1_guess, a2_guess, a3_guess, a4_guess, b_guess, c_guess])
+            c_guess = 0
+            initial_guesses.append([x0, y0_guess, k1_guess, b_guess, c_guess])
 
-        best_p = fit_piecewise_linear_polynomial_exponential(d_ext, f_ext, initial_guesses)
-        print(i, best_p)
+        best_p = fit_piecewise_linear_power(d_ext, f_ext, initial_guesses)
         
         # # Generate initial guesses for the breakpoints
         # initial_guesses = []
@@ -220,29 +214,29 @@ def contactPoint_derivative(F, D):
         #             y0_guess = f_ext[np.abs(d_ext - x0).argmin()]  # Estimate y0 based on closest point
         #             k1_guess = (f_ext[-1] - f_ext[0]) / (d_ext[-1] - d_ext[0])  # Initial slope guess for linear part
         #             a2_guess = 0  # Initial quadratic coefficient for quadratic part
-        #             b2_guess = k1_guess  # Initial linear coefficient for quadratic part
+        #             a1_guess = k1_guess  # Initial linear coefficient for quadratic part
         #             k3_guess = k1_guess # Initial linear coefficient for the second linear part
         #             # Append guesses for the parameters: [x0, x1, y0, k1, a2, b2, k3]
-        #             initial_guesses.append([x0, x1, y0_guess, k1_guess, a2_guess, b2_guess, k3_guess])
+        #             initial_guesses.append([x0, x1, y0_guess, k1_guess, a2_guess, a1_guess, k3_guess])
 
         # best_p = fit_piecewise_linear_quadratic_linear(d_ext, f_ext, initial_guesses)
 
         if best_p is not None:
             xd = np.linspace(d_ext.min(), d_ext.max(), 1000)
             plt.plot(d_ext, f_ext, 'deepskyblue', label='force-distance curve')
-            plt.plot(xd, piecewise_linear_polynomial_exponential(xd, *best_p), label='piecewise linear-Poly4-Exp', color='red')
-            plt.scatter([best_p[0]], [piecewise_linear_polynomial_exponential(best_p[0], *best_p)], color='green', s=100, zorder=5, label='Change Point')      
+            plt.plot(xd, piecewise_linear_power(xd, *best_p), label='piecewise linear-powerlaw', color='red')
+            plt.scatter([best_p[0]], [piecewise_linear_power(best_p[0], *best_p)], color='green', s=100, zorder=5, label='Change Point')  
             plt.legend(loc="upper right")
             plt.xlabel('distance (um)')
             plt.ylabel('force (nN)')
-            plt.title('Force-distance curve %i with Piecewise Linear-Poly4-Exp Regression' % i)
+            plt.title('Force-distance curve %i with Piecewise Linear-Power law Regression' % i)
             plt.savefig('Results\Fd_contact_point_GL14_' + str(i) + '.png')
             plt.close()
 
             # Print change points
             change_point1 = -((best_p[0]*(d_ext_max - d_ext_min)) + d_ext_min)
             
-            print("Change Point:", change_point1)
+            print(i, " Change Point:", change_point1)
             contact_point_fit.append(change_point1)
         else:
             print("No valid fit found.")
@@ -252,6 +246,57 @@ def contactPoint_derivative(F, D):
         plt.close()
         
     return contact_point_fit
+
+def contactPoint_evaluation(F, d, contact_point_list):
+    k = 1
+    date = '2024.07.18'
+    data_path = r'StoredValues/' 
+    with open(data_path + '/real_contact_point_list_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
+        real_contact_point_list = pickle.load(output_file)
+    with open(data_path + '/real_contact_point_height_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
+        real_contact_point_height = pickle.load(output_file)
+    
+    number_of_points_correct = 0
+    error_squared_list = []
+    
+    lower_bound_list, upper_bound_list = [], []
+    
+    for i in range(len(contact_point_list)):
+        real_height = real_contact_point_height[i]
+        estimated_height = d[i][0][contact_point_list[i]]
+        
+        # calculate upper and lower bounds of real height
+        margin = 0.1*real_height # 5% error allowed
+        real_height_L = real_height - margin # lower bound
+        real_height_U = real_height + margin # upper bound
+        
+        lower_bound_list.append(real_height_L)
+        upper_bound_list.append(real_height_U)
+        
+        # evaluate estimated height
+        if real_height_L <= estimated_height <= real_height_U:
+            number_of_points_correct = number_of_points_correct + 1 
+        else:
+            absolute_difference = np.abs(real_height - estimated_height)
+            absolute_difference_squared = absolute_difference**2
+            error_squared_list.append(absolute_difference_squared)
+    
+    # percentage of points correct  
+    percentage_of_points_correct = (number_of_points_correct/len(contact_point_list))*100
+    
+    # Root mean square error (RMSE) calculation
+    sum_error_squared = np.sum(error_squared_list)
+    average_error_squared = sum_error_squared/len(contact_point_list)
+    RMS_error = np.sqrt(average_error_squared)
+    
+    # plot values
+    Fd(F, d, real_contact_point_list, contact_point_list, lower_bound_list, upper_bound_list, save=True)
+    # print values
+    print('Number of points correct: ', number_of_points_correct)
+    print('Percentage of points correct: %.2f ' % percentage_of_points_correct)
+    print('RMS error: ', RMS_error)
+        
+    return number_of_points_correct, percentage_of_points_correct, RMS_error
 
 def contactPoint3(F, d, plot = False, save = False, perc_bottom=0, perc_top=50, multiple=4, multiple1=3, multiple2=2): ## TODO: Turn lists of arrays into arrays
     M, B = baselineLinearFit(F, d, perc_bottom=perc_bottom, perc_top=perc_top)

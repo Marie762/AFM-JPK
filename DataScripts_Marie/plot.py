@@ -8,11 +8,13 @@ Created on Tue Apr 3 2024
 import matplotlib.pylab as plt
 import pandas as pd
 
-def Fd(F, d, contact_point_list, contact_point_fit, save=False):
+def Fd(F, d, real_contact_point_list, contact_point_list, lower_bound_list, upper_bound_list, save=False):
     for k in range(len(F)):
         fig, ax = plt.subplots()
-        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='real contact point')
-        ax.plot(contact_point_fit[k], 0, 'bo', label='real contact point fit')
+        ax.plot(d[k][0][real_contact_point_list[k]], F[k][0][real_contact_point_list[k]], 'rx', label='real contact point')
+        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'gx', label='estimated contact point')
+        ax.axvline(lower_bound_list[k], color='b', label='lower bound')
+        ax.axvline(upper_bound_list[k], color='m', label='upper bound')
         ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
         # ax.plot(d[k][1], F[k][1], 'orange')
         # if len(F[k]) > 2:
@@ -20,9 +22,9 @@ def Fd(F, d, contact_point_list, contact_point_fit, save=False):
         ax.set(xlabel='height measured (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
         plt.legend(loc="upper right")
         if save:
-            fig.savefig('Results\Fd_real_contact_point_' + str(k) + '.png')
+            fig.savefig('Results\Fd_contact_point_evaluation' + str(k) + '.png')
         plt.close()
-    return fig
+    return 
 
 def Ft(F, t, save='False'):
     for k in range(len(F)):

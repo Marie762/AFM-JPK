@@ -13,7 +13,7 @@ import pickle
 from extractJPK import QI, force
 from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, tipDisplacement, smoothingSG
 from plot import Fd, FdGrid_Emodulus, FdGrid_ForceDrop, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, FdGrid_PenetrationForce, Fdsubplot, QIMap
-from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3, contactPoint_derivative
+from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint3, contactPoint_derivative, contactPoint_evaluation
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from createGrid import grid10x10, grid10x10_specialcase, grid15x15, grid15x15_specialcase, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
@@ -32,41 +32,37 @@ delta = tipDisplacement(F_bS, d_hC)
 k = 1
 date = '2024.07.18'
 data_path = r'StoredValues/' 
-# load_from_pickle=False
-# if not load_from_pickle:
-#     contact_point_fit = contactPoint_derivative(F_bS, d_hC)
-#     with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "wb") as output_file:
-#         pickle.dump(contact_point_fit, output_file)
-# else:
-#     with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
-#         contact_point_fit = pickle.load(output_file)
+load_from_pickle=False
+if not load_from_pickle:
+    contact_point_fit = contactPoint_derivative(F_bS, d_hC)
+    with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "wb") as output_file:
+        pickle.dump(contact_point_fit, output_file)
+else:
+    with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
+        contact_point_fit = pickle.load(output_file)
 
-# contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=10, multiple1=3, multiple2=2, plot=True, save=True)
-
-
-# # make the perfect contact point fit:
-# with open(data_path + '/real_contact_point_fit_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
-#         real_contact_point_fit = pickle.load(output_file)
+# contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=10, multiple1=3, multiple2=2)
 
 
-# # find index in array with closest value to the change point in the fit
-# contact_point_list = []
-# for n in range(len(d_hC)):
-#     array = np.asarray(d_hC[n][0])
-#     value = real_contact_point_fit[n]
-#     diff_abs = np.abs(array - value)
-#     idx = (diff_abs).argmin()
-#     contact_point_list.append(idx) 
+# find index in array with closest value to the change point in the fit
+contact_point_list = []
+for n in range(len(d_hC)):
+    array = np.asarray(d_hC[n][0])
+    value = contact_point_fit[n]
+    diff_abs = np.abs(array - value)
+    idx = (diff_abs).argmin()
+    contact_point_list.append(idx) 
 
-with open(data_path + '/real_contact_point_list_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
-        real_contact_point_list = pickle.load(output_file)
+number_of_points_correct, percentage_of_points_correct, total_error = contactPoint_evaluation(F_bS, d_hC, contact_point_list)
+
 
 # fig = Fd(F_bS, d_hC, real_contact_point_list, real_contact_point_fit, save=True)
 
-# find height data for height grid plot
-contact_point_height = []
-for n in range(len(d_hC)):
-    contact_point_height.append(d_hC[n][0][real_contact_point_list[n]])
+# # find height data for height grid plot
+# contact_point_height = []
+# for n in range(len(d_hC)):
+#     contact_point_height.append(d_hC[n][0][real_contact_point_list[n]])
+
 
 # substrate_contact_list = substrateContact(F_bS, delta, contact_point_list)
 
@@ -84,9 +80,9 @@ for n in range(len(d_hC)):
 # E_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
 
 
-# # # create grid plot
-grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
-fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
+# # # # create grid plot
+# grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
+# fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
 
 # grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
 # fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
