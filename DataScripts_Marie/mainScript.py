@@ -11,9 +11,9 @@ import seaborn as sns
 import pandas as pd
 import pickle
 from extractJPK import QI, force
-from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, tipDisplacement, smoothingSG
+from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, sensitivityCorrection, tipDisplacement, smoothingSG
 from plot import Fd, FdGrid_Emodulus, FdGrid_ForceDrop, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, FdGrid_PenetrationForce, Fdsubplot, QIMap
-from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint_ruptures, contactPoint3, contactPoint_evaluation, contactPoint_derivative
+from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint_RoV, contactPoint_ruptures, contactPoint3, contactPoint_evaluation, contactPoint_derivative
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
 from createGrid import grid10x10, grid10x10_specialcase, grid15x15, grid15x15_specialcase, grid20x20, grid25x25
 from youngsModulus import fitYoungsModulus
@@ -21,27 +21,33 @@ from penetrationPoint import forceDrop, indentationDepth, substrateContact, find
 
 
 ###### Fd ###############################################################################
-
-# extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
-d, F, t = force()
-
-F_bS = baselineSubtraction(F)
-d_hC = heightCorrection2(d)
-delta = tipDisplacement(F_bS, d_hC)
-
 k = 1
-date = '2024.07.18'
+date = '2024.07.18_'
+# extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
+d, F, t = force(load_from_pickle = True, grid=k, date=date)
+new_sensitivity = 80*10**(-9)
+F_corr = sensitivityCorrection(F, new_sensitivity)
+
+F_bS = baselineSubtraction(F_corr)
+d_hC = heightCorrection2(d)
+delta = tipDisplacement(F_bS, d_hC, plot=True, save=True)
+delta_hC = heightCorrection2(delta)
+
+# RoV_list = contactPoint_RoV(F_bS, delta_hC, plot=True)
+# derivative_list = contactPoint_derivative(F_bS, delta_hC, plot=True)
+
 data_path = r'StoredValues/' 
-load_from_pickle=False
-if not load_from_pickle:
+load_from_pickle=True
+# load_from_pickle=True
+if not load_from_pickle: 
     contact_point_fit = contactPoint_ruptures(F_bS, d_hC)
-    with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "wb") as output_file:
+    with open(data_path + '/contactPoint_'+ date + 'grid_' + str(k) + '.pkl', "wb") as output_file:
         pickle.dump(contact_point_fit, output_file)
 else:
-    with open(data_path + '/contactPoint_'+ date + '_grid_' + str(k) + '.pkl', "rb") as output_file:
+    with open(data_path + '/contactPoint_'+ date + 'grid_' + str(k) + '.pkl', "rb") as output_file:
         contact_point_fit = pickle.load(output_file)
 
-# contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=10, multiple1=3, multiple2=2)
+# # # contact_point_list = contactPoint3(F_bS, d_hC, perc_top=50,multiple=10, multiple1=3, multiple2=2)
 
 
 # find index in array with closest value to the change point in the fit
@@ -61,7 +67,7 @@ number_of_points_correct, percentage_of_points_correct, total_error = contactPoi
 # # find height data for height grid plot
 # contact_point_height = []
 # for n in range(len(d_hC)):
-#     contact_point_height.append(d_hC[n][0][real_contact_point_list[n]])
+#     contact_point_height.append(d_hC[n][0][contact_point_list[n]])
 
 
 # substrate_contact_list = substrateContact(F_bS, delta, contact_point_list)
@@ -84,7 +90,7 @@ number_of_points_correct, percentage_of_points_correct, total_error = contactPoi
 # grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
 # fig = FdGrid_Height(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
 
-# grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
+# # grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
 # fig = FdGrid_Peaks(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
 
 # grid_data, x_and_y_data = grid15x15(first_penetration_force_list) 

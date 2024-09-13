@@ -5,11 +5,12 @@ Created on Tue Apr 3 2024
 @author: marie
 """
 
-import copy
+
 import time
 import matplotlib.pylab as plt
 import numpy as np
 import pickle
+from scipy.stats import bootstrap
 from procBasic import baselineSubtraction, heightCorrection
 from plot import Fd
 
@@ -103,12 +104,14 @@ def contactPoint_ruptures(F, D):
         data = np.column_stack([d_ext, f_ext])
 
         # Apply KernelCPD with RBF kernel for change point detection
-        model = "l1"  # "l2", "rbf" normal, cosine, mahalanobis, linear
+        model = "normal"  # l1, l2, rbf, normal, cosine, ml, linear, clinear, rank, , ar, mahalanobis
+        # algo = rpt.KernelCPD(kernel=model).fit(f_ext) # linear, rbf, cosine
         # algo = rpt.Pelt(model=model).fit(f_ext)
-        # algo = rpt.Window(width=40, model=model).fit(data)
-        # algo = rpt.Binseg(model='linear').fit(data)
-        algo = rpt.Dynp(model='normal').fit(f_ext)
-        result = algo.predict(n_bkps=1)
+        # algo = rpt.BottomUp(model=model).fit(f_ext)
+        # algo = rpt.Window(width=50, model=model).fit(data)
+        algo = rpt.Binseg(model=model).fit(data)
+        # algo = rpt.Dynp(model=model).fit(f_ext)
+        result = algo.predict(n_bkps=1) # bkps=1
 
         # Get the change point
         if result:
@@ -162,7 +165,7 @@ def contactPoint2(F, d, plot='False', saveplot='False'):
     return contact_point_list
 
 
-def contactPoint_derivative(F, D):
+def contactPoint_piecewise_regression(F, D):
     contact_point_fit = []
     for i,(f,d) in enumerate(zip(F,D)):
         f_ext, _ = f[0], f[1]
@@ -313,6 +316,66 @@ def contactPoint_derivative(F, D):
         
     return contact_point_fit
 
+def contactPoint_RoV(F,D, plot=True):
+    import statistics
+    RoV_list = []
+    N = 100
+    for i in range(len(F)):
+        RoV_local_list = []
+        f = F[i][0]
+        d = D[i][0]
+        for j in range(len(f)):
+            if j < (len(f)-2*N):
+                k = j + N
+                variance_1 = statistics.variance(f[(k+1):(k+N)])
+                variance_2 = statistics.variance(f[(k-N):(k-1)])
+                RoV = variance_1/variance_2
+                RoV_local_list.append(RoV)
+        d_list = d[N:(len(f)-N)]   
+        RoV_list.append(RoV_local_list)
+        if i<1:
+            print('len d_list: ', len(d_list))
+            print('len RoV_local_list: ', len(RoV_local_list))
+
+        if plot:
+            plt.plot(d_list, RoV_local_list, 'deepskyblue', label='RoV-distance curve with N: %i' % N)
+            plt.legend(loc="upper right")
+            plt.xlabel('distance (um)')
+            plt.ylabel('RoV')
+            plt.title('RoV-distance curve %i ' % i)
+            plt.savefig('Results\RoV_plot_N_' +str(N) + '_grid_' + str(i) + '.png')
+            plt.close()
+    return RoV_list
+
+def contactPoint_derivative(F, D, plot):
+    derivative_list = []
+    N = 100
+    for i in range(len(F)):
+        derivative_local_list = []
+        f = F[i][0]
+        d = D[i][0]
+        for j in range(len(f)):
+            if j < (len(f)-N):
+                df = f[j+N] - f[j]
+                dd = d[j+N] - d[j]
+                derivative = df/dd
+                derivative_local_list.append(derivative)
+        
+        d_list = d[:(len(f)-N)]   
+        derivative_list.append(derivative_local_list)
+        if i<1:
+            print('len d_list: ', len(d_list))
+            print('len derivative_local_list: ', len(derivative_local_list))
+
+        if plot:
+            plt.plot(d_list, derivative_local_list, 'deepskyblue', label='derivative-distance curve with N: %i' % N)
+            plt.legend(loc="upper right")
+            plt.xlabel('distance (um)')
+            plt.ylabel('Derivative')
+            plt.title('Derivative-distance curve %i' % i)
+            plt.savefig('Results\derivative_plot_N_' +str(N) + '_grid_' + str(i) + '.png')
+            plt.close()
+    return derivative_list
 
 def contactPoint_evaluation(F, d, contact_point_list):
     k = 1
@@ -324,43 +387,53 @@ def contactPoint_evaluation(F, d, contact_point_list):
         real_contact_point_height = pickle.load(output_file)
     
     number_of_points_correct = 0
-    error_squared_list = []
+    error_list = []
     
     lower_bound_list, upper_bound_list = [], []
     
     for i in range(len(contact_point_list)):
         real_height = real_contact_point_height[i]
+        # real_height = d[i][0][real_contact_point_list[i]]
         estimated_height = d[i][0][contact_point_list[i]]
         
         # calculate upper and lower bounds of real height
-        margin = 0.1*real_height # 5% error allowed
-        real_height_L = real_height - margin # lower bound
-        real_height_U = real_height + margin # upper bound
-        
+        margin = round(0.05*len(d[i][0])) # 5% error allowed
+            
+        index_L = real_contact_point_list[i] + margin # lower bound
+        index_U = real_contact_point_list[i] - margin # upper bound
+        real_height_L = d[i][0][index_L]
+        real_height_U = d[i][0][index_U]
         lower_bound_list.append(real_height_L)
         upper_bound_list.append(real_height_U)
         
         # evaluate estimated height
         if real_height_L <= estimated_height <= real_height_U:
             number_of_points_correct = number_of_points_correct + 1 
-
-        error_squared_list.append(np.abs(real_height - estimated_height))
+        # calculate the absolute error 
+        error_list.append(np.abs(real_height - estimated_height))
     
     # percentage of points correct  
     percentage_of_points_correct = (number_of_points_correct/len(contact_point_list))*100
-    
-    # Root mean square error (RMSE) calculation
-    sum_error_squared = np.mean(error_squared_list)
-    RMS_error = sum_error_squared
-    
+
+    # Mean Absolute Deviation (MAD) calculation
+    MAD_error = np.mean(error_list)
+    # data = (error_list,)  # samples must be in a sequence
+    # res = bootstrap(data, np.std, confidence_level=0.95)
+    # confidence_intervals = res.confidence_interval
+
+    lower_percentile = 5
+    upper_percentile = 90
+    confidence_interval = np.percentile(error_list, [lower_percentile, upper_percentile])
+
     # plot values
     Fd(F, d, real_contact_point_list, contact_point_list, lower_bound_list, upper_bound_list, save=True)
     # print values
     print('Number of points correct: ', number_of_points_correct)
     print('Percentage of points correct: %.2f ' % percentage_of_points_correct)
-    print('MAD: ', RMS_error)
-        
-    return number_of_points_correct, percentage_of_points_correct, RMS_error
+    print('MAD: ', MAD_error)
+    print('lower confidence interval: ', confidence_interval[0])
+    print('upper confidence interval: ', confidence_interval[1])      
+    return number_of_points_correct, percentage_of_points_correct, MAD_error
 
 def contactPoint3(F, d, plot = False, save = False, perc_bottom=0, perc_top=50, multiple=4, multiple1=3, multiple2=2): ## TODO: Turn lists of arrays into arrays
     M, B = baselineLinearFit(F, d, perc_bottom=perc_bottom, perc_top=perc_top)
