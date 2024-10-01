@@ -17,23 +17,37 @@ def substrateLinearFit(F, d, perc_bottom=98, plot=False, save=False):
     M = []
     B = []
     for i in range(len(F)):
-        slice_bottom = round((perc_bottom/100)*len(F[i][0]))
-        m,b = np.polyfit(d[i][0][slice_bottom:], F[i][0][slice_bottom:], 1) # linear fit of first ..% of dataset
-        M.append(m) # store in lists
-        B.append(b)
-        
-        if plot:
-            x = d[i][0]
-            lin_fit = m*x + b
-            fig, ax = plt.subplots()
-            ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
-            ax.plot(x[slice_bottom:], lin_fit[slice_bottom:], 'orange', label='linear fit line')
-            ax.plot(d[i][0][slice_bottom:], F[i][0][slice_bottom:], 'red', label='part of curve used in the linear fit')
-            ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
-            plt.legend(loc="upper right")
-            if save:
-                fig.savefig('Results\Fd_substrate_linearfit_' + str(i) + '.png')
-            plt.close()
+        if len(F[i][0]) > 300:
+            slice_bottom = round((perc_bottom/100)*len(F[i][0]))
+            m,b = np.polyfit(d[i][0][slice_bottom:], F[i][0][slice_bottom:], 1) # linear fit of first ..% of dataset
+            # print(i, m)
+            M.append(m) # store in lists
+            B.append(b)
+            
+            if plot:
+                x = d[i][0]
+                lin_fit = m*x + b
+                fig, ax = plt.subplots()
+                ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
+                ax.plot(x[slice_bottom:], lin_fit[slice_bottom:], 'orange', label='linear fit line')
+                ax.plot(d[i][0][slice_bottom:], F[i][0][slice_bottom:], 'red', label='part of curve used in the linear fit')
+                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
+                plt.legend(loc="upper right")
+                if save:
+                    fig.savefig('Results\Fd_substrate_linearfit_' + str(i) + '.png')
+                plt.close()
+        else:
+            M.append(None) 
+            B.append(None)
+            if plot:
+                fig, ax = plt.subplots()
+                ax.plot(0, 0, 'deepskyblue')
+                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i has no extend curve' % i)
+                plt.xlim(0,6)
+                plt.ylim(0,6)
+                if save:
+                    fig.savefig('Results\Fd_substrate_linearfit_' + str(i) + '.png')
+                plt.close()
     return M, B
 
 def substrateContact(F, d, contact_point_list, perc_bottom=98, plot=False, save=False):
@@ -41,14 +55,19 @@ def substrateContact(F, d, contact_point_list, perc_bottom=98, plot=False, save=
     M, B = substrateLinearFit(F,d, perc_bottom=perc_bottom)
     plot_bottom = 95
     for i in range(len(F)):
-        if M[i] < -1:
+        if contact_point_list[i]:
+            #if M[i] < -1:
             difference_list = []
             for j in range(len(F[i][0])):
                 f = M[i]*(d[i][0][j]) + B[i] # linear fit line
                 difference_squared = (F[i][0][j] - f)**2 # the difference-swuared between the force value and the value of the linear fit line at each point
                 difference_list.append(difference_squared)
             
-            argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.01][0]
+            argmin_val = [i for i,el in enumerate(difference_list) if abs(el) < 0.01]
+            if argmin_val is None or len(argmin_val) == 0:
+                argmin_val = len(F[i][0]) - 1
+            else:
+                argmin_val = argmin_val[0]
         
             substrate_contact_list.append(argmin_val)
             if plot:
@@ -66,21 +85,32 @@ def substrateContact(F, d, contact_point_list, perc_bottom=98, plot=False, save=
                     fig.savefig('Results\Fd_substrate_contact_' + str(i) + '.png')
                 plt.close()
                 
+            # else:
+            #     last_index = len(F[i][0]) - 1
+            #     substrate_contact_list.append(last_index)
+        
+            #     if plot:
+            #         x = d[i][0]
+            #         lin_fit = M[i]*x + B[i]
+            #         slice_bottom = round((plot_bottom/100)*len(F[i][0]))
+            #         fig, ax = plt.subplots()
+            #         ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
+            #         ax.plot(x[slice_bottom:], lin_fit[slice_bottom:], 'orange', label='linear fit line')
+            #         ax.plot(d[i][0][last_index], F[i][0][last_index], 'go', label='hard substrate contact point estimation')
+            #         ax.plot(d[i][0][contact_point_list[i]], F[i][0][contact_point_list[i]], 'ro', label='=contact point estimation')
+            #         ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
+            #         plt.legend(loc="upper right")
+            #         if save:
+            #             fig.savefig('Results\Fd_substrate_contact_' + str(i) + '.png')
+            #         plt.close()
         else:
-            last_index = len(F[i][0]) - 1
-            substrate_contact_list.append(last_index)
-    
+            substrate_contact_list.append(0)
             if plot:
-                x = d[i][0]
-                lin_fit = M[i]*x + B[i]
-                slice_bottom = round((plot_bottom/100)*len(F[i][0]))
                 fig, ax = plt.subplots()
-                ax.plot(d[i][0], F[i][0], 'deepskyblue', label='force-distance curve')
-                ax.plot(x[slice_bottom:], lin_fit[slice_bottom:], 'orange', label='linear fit line')
-                ax.plot(d[i][0][last_index], F[i][0][last_index], 'go', label='hard substrate contact point estimation')
-                ax.plot(d[i][0][contact_point_list[i]], F[i][0][contact_point_list[i]], 'ro', label='=contact point estimation')
-                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % i)
-                plt.legend(loc="upper right")
+                ax.plot(0, 0, 'deepskyblue')
+                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i has no extend curve' % i)
+                plt.xlim(0,6)
+                plt.ylim(0,6)
                 if save:
                     fig.savefig('Results\Fd_substrate_contact_' + str(i) + '.png')
                 plt.close()
@@ -103,72 +133,129 @@ def substrateContact2(F, d, contact_point_list, plot=False, save=False):
             plt.close()
     return substrate_contact_list
 
-def findPeaks(F, d, contact_point_list, plot=False, save=False):
+def findPeaks(F, d, contact_point_list, prominence=0.2, plot=False, save=False):
     first_peak_list = []
     number_of_peaks_list = []
     all_peaks_list = []
-    properties_list = []
+    peak_heights_list, right_bases_list = [], []
+    # properties_list = []
     for k in range(len(F)):
-        peaks, properties = find_peaks(F[k][0][contact_point_list[k]:], width=(2, None), distance=30, prominence=0.01, height=(None, None))
-        peaks = peaks + contact_point_list[k]
-        properties_list.append(properties)
-        if len(peaks) != 0:
-            first_peak_list.append(peaks[0])
-            number_of_peaks_list.append(len(peaks))
-            all_peaks_list.append(peaks)
-            if plot:
-                fig, ax = plt.subplots()
-                ax.plot(d[k][0][peaks], F[k][0][peaks], 'yo', label='peaks identified')
-                ax.plot(d[k][0][peaks[0]], F[k][0][peaks[0]], 'bo', label='first peak identified')
-                ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
-                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
-                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-                ax.text(2.5, 3, '# of peaks = %i' % len(peaks), fontsize=12)
-                plt.legend(loc="upper right")
-                if save:
-                    fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
-                plt.close()
+        if contact_point_list[k]:
+            peaks, properties = find_peaks(F[k][0][contact_point_list[k]+100:], width=(None, None), distance=100, prominence=prominence, height=(None, None)) #distance=100
+            if len(peaks) != 0:
+                peaks = peaks + contact_point_list[k] +100
+                width = properties["widths"]
+                peak_heights = properties["peak_heights"]
+                right_bases = properties["right_bases"] + contact_point_list[k] +100
+                # for m in range(len(peaks)):
+                #     right_bases[m] = right_bases[m] + contact_point_list[k]
+                
+                peaks_filtered = []
+                peak_heights_filtered = []
+                right_bases_filtered = []
+                for p in range(len(peaks)):
+                    if width[p]>50:
+                        peaks_filtered.append(peaks[p])
+                        peak_heights_filtered.append(peak_heights[p])
+                        right_bases_filtered.append(right_bases[p])
+                            
+                if peaks_filtered:
+                    first_peak_list.append(peaks_filtered[0])
+                    number_of_peaks_list.append(len(peaks_filtered))
+                    all_peaks_list.append(peaks_filtered)
+                    peak_heights_list.append(peak_heights_filtered)
+                    right_bases_list.append(right_bases_filtered)
+
+                    if plot:
+                        fig, ax = plt.subplots()
+                        ax.plot(d[k][0][peaks_filtered], F[k][0][peaks_filtered], 'yo', label='peaks identified')
+                        ax.plot(d[k][0][peaks_filtered[0]], F[k][0][peaks_filtered[0]], 'bo', label='first peak identified')
+                        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
+                        ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
+                        ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
+                        ax.text(2.5, 3, '# of peaks = %i' % len(peaks_filtered), fontsize=12)
+                        plt.legend(loc="upper right")
+                        if save:
+                            fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                        plt.close()
+                else:
+                    first_peak_list.append(None)
+                    number_of_peaks_list.append(0)
+                    all_peaks_list.append(None)
+                    peak_heights_list.append([])
+                    right_bases_list.append([])
+                    if plot:
+                        fig, ax = plt.subplots()
+                        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
+                        ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
+                        ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
+                        ax.text(2.5, 3, '# of peaks = 0', fontsize=12)
+                        plt.legend(loc="upper right")
+                        if save:
+                            fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                        plt.close()
+            else:
+                first_peak_list.append(None)
+                number_of_peaks_list.append(0)
+                all_peaks_list.append(None)
+                peak_heights_list.append([])
+                right_bases_list.append([])
+                if plot:
+                    fig, ax = plt.subplots()
+                    ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
+                    ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
+                    ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
+                    ax.text(2.5, 3, '# of peaks = 0', fontsize=12)
+                    plt.legend(loc="upper right")
+                    if save:
+                        fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                    plt.close()
         else:
             first_peak_list.append(None)
             number_of_peaks_list.append(0)
             all_peaks_list.append(None)
+            peak_heights_list.append([])
+            right_bases_list.append([])
             if plot:
                 fig, ax = plt.subplots()
-                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
-                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-                ax.text(2.5, 3, '# of peaks = 0', fontsize=12)
-                plt.legend(loc="upper right")
+                ax.plot(0, 0, 'deepskyblue')
+                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i has no extend curve' % k)
+                plt.xlim(0,6)
+                plt.ylim(0,6)
                 if save:
                     fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
                 plt.close()
-    return first_peak_list, number_of_peaks_list, all_peaks_list, properties_list
+                
+    return first_peak_list, number_of_peaks_list, all_peaks_list, peak_heights_list, right_bases_list
 
-def forceDrop(F, d, contact_point_list, first_peak_list, properties_list, plot=True):
+def forceDrop(F, d, first_peak_list,peak_heights_list, right_bases_list, plot=True):
     penetration_force_list = []
-    right_bases_list = []
+    right_bases_list2 = []
     force_drop_list = []
     first_penetration_force_list = []
     first_force_drop_list = []
+    
     for k in range(len(F)):
-        peak_height = properties_list[k]["peak_heights"] # penetration force
-        right_bases = properties_list[k]["right_bases"] # index of base of peak to the right (for this case it would seem to the left)
+        peak_height = peak_heights_list[k] # penetration force
+        right_bases = right_bases_list[k] # index of base of peak to the right (for this case it would seem to the left)
         val_list = []
         indx_list = []
+        force_drop_local = []
         for m in range(len(right_bases)):
-            indx = right_bases[m] + contact_point_list[k]
+            indx = right_bases[m]
             indx_list.append(indx)
             val = F[k][0][indx] # value of base of peak to the right
             val_list.append(val)
-
-        force_drop = peak_height - val_list # the force drop is the difference between the penetration force and the base of the peak to the right 
-        
+            force_drop = peak_height[m] - val # the force drop is the difference between the penetration force and the base of the peak to the right 
+            force_drop_local.append(force_drop)
+   
         penetration_force_list.append(peak_height)
-        right_bases_list.append(val_list)
-        force_drop_list.append(force_drop)
+        right_bases_list2.append(val_list)
+        force_drop_list.append(force_drop_local)
         
-        if len(force_drop) >= 1:
+        if len(force_drop_local) >= 1:
             first_penetration_force = peak_height[0]
-            first_force_drop = force_drop[0]
+            first_force_drop = force_drop_local[0]
         else:
             first_penetration_force = 0
             first_force_drop = 0
@@ -187,7 +274,7 @@ def forceDrop(F, d, contact_point_list, first_peak_list, properties_list, plot=T
             
             upper_x_lim = indx_list[0] + limit
             upper_y_lim = indx_list[0] + limit
-            if upper_x_lim > len(d[k][0]):
+            if upper_x_lim >= len(d[k][0]):
                 upper_x_lim = len(d[k][0]) - 1
                 upper_y_lim = upper_x_lim
             
@@ -203,14 +290,17 @@ def forceDrop(F, d, contact_point_list, first_peak_list, properties_list, plot=T
                 plt.legend(loc="upper left")
                 fig.savefig('Results\Fd_first_force_drop_' + str(k) + '.png')
                 plt.close()  
-    return penetration_force_list, first_penetration_force_list, right_bases_list, force_drop_list, first_force_drop_list
+    return penetration_force_list, first_penetration_force_list, right_bases_list2, force_drop_list, first_force_drop_list
 
 def indentationDepth(F, d, contact_point_list, first_peak_list):
     indentation_depth_arr = np.zeros(len(d)) 
     for k in range(len(d)): 
-        if first_peak_list[k]:   
-            indentation_depth = d[k][0][contact_point_list[k]] - d[k][0][first_peak_list[k]]
-            indentation_depth_arr[k] = indentation_depth
+        if contact_point_list[k]:
+            if first_peak_list[k]:   
+                indentation_depth = d[k][0][contact_point_list[k]] - d[k][0][first_peak_list[k]]
+                indentation_depth_arr[k] = indentation_depth
+        else:
+            indentation_depth_arr[k] = 0
     return indentation_depth_arr
 
 ## don't know if I will still use this:
