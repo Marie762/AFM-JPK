@@ -425,14 +425,17 @@ def contactPoint_derivative(F, D, N=600, threshold1=2.5, threshold2=0.05, plot=T
             contact_point_list.append(argmin_val+offset)
 
             if plot:
-                plt.plot(d_list, derivative_local_list, 'deepskyblue', label='derivative-distance curve with N: %i' % N)
-                plt.plot(d_list, np.zeros(len(d_list)), 'g--')
-                plt.plot(d_list[argmin_val], derivative_local_list[argmin_val], 'bo', label='contact point estimation')
-                plt.legend(loc="lower right")
-                plt.xlabel('distance (um)')
-                plt.ylabel('Derivative')
-                plt.title('Derivative-distance curve %i' % i)
+                plt.plot(d_list, derivative_local_list, 'deepskyblue', label='derivative-distance curve with N: %i' % N, linewidth=4)
+                plt.plot(d_list, np.zeros(len(d_list)), 'g--', label='zero-line', linewidth=4)
+                plt.plot(d_list[argmin_val], derivative_local_list[argmin_val], 'bo', markersize=8, label='contact point estimation')
+                plt.legend(loc="lower right", prop={'size': 12})
+                plt.tick_params(axis='both', which='major', labelsize=15)
+                plt.xlabel(u'Distance (\u03bcm)', fontsize=15)
+                plt.ylabel('Derivative', fontsize=15)
+                # plt.title('Derivative-distance curve %i' % i)
                 plt.savefig('Results\derivative_plot_N_' +str(N) + '_grid_' + str(i) + '.png')
+                if i == 0:
+                    plt.savefig('Results\derivative_plot_N_' +str(N) + '_grid_' + str(i) + '.pdf', format='pdf')
                 plt.close()
         else:
             contact_point_list.append(None)
@@ -440,7 +443,7 @@ def contactPoint_derivative(F, D, N=600, threshold1=2.5, threshold2=0.05, plot=T
                 plt.plot(0, 0, 'deepskyblue')
                 plt.xlim(0,6)
                 plt.ylim(0,6)
-                plt.xlabel('distance (um)')
+                plt.xlabel(u'Distance (\u03bcm)')
                 plt.ylabel('Derivative')
                 plt.title('Derivative-distance curve %i has no extend curve' % i)
                 plt.savefig('Results\derivative_plot_N_' +str(N) + '_grid_' + str(i) + '.png')

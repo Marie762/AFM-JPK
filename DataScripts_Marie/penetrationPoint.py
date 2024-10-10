@@ -168,15 +168,18 @@ def findPeaks(F, d, contact_point_list, prominence=0.2, plot=False, save=False):
 
                     if plot:
                         fig, ax = plt.subplots()
-                        ax.plot(d[k][0][peaks_filtered], F[k][0][peaks_filtered], 'yo', label='peaks identified')
-                        ax.plot(d[k][0][peaks_filtered[0]], F[k][0][peaks_filtered[0]], 'bo', label='first peak identified')
-                        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
-                        ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
-                        ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-                        ax.text(2.5, 3, '# of peaks = %i' % len(peaks_filtered), fontsize=12)
-                        plt.legend(loc="upper right")
+                        ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve', linewidth=4)
+                        ax.plot(d[k][0][peaks_filtered], F[k][0][peaks_filtered], 'yo', markersize=8, label='peaks identified')
+                        ax.plot(d[k][0][peaks_filtered[0]], F[k][0][peaks_filtered[0]], 'bo', markersize=8, label='first peak identified')
+                        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', markersize=8, label='contact point estimation')
+                        ax.set_xlabel(u'Distance (\u03bcm)', fontsize=15)
+                        ax.set_ylabel('Force (nN)', fontsize=15)
+                        plt.tick_params(axis='both', which='major', labelsize=15)
+                        ax.text(2.5, 3, '# of peaks = %i' % len(peaks_filtered), fontsize=15)
+                        plt.legend(loc="upper right", prop={'size': 15})
                         if save:
                             fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                            fig.savefig('Results\Fd_find_peaks_' + str(k) + '.pdf', format='pdf')
                         plt.close()
                 else:
                     first_peak_list.append(None)
@@ -186,13 +189,16 @@ def findPeaks(F, d, contact_point_list, prominence=0.2, plot=False, save=False):
                     right_bases_list.append([])
                     if plot:
                         fig, ax = plt.subplots()
-                        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
-                        ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
-                        ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-                        ax.text(2.5, 3, '# of peaks = 0', fontsize=12)
-                        plt.legend(loc="upper right")
+                        ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve', linewidth=4)
+                        ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', markersize=8, label='contact point estimation')
+                        ax.set_xlabel(u'Distance (\u03bcm)', fontsize=15)
+                        ax.set_ylabel('Force (nN)', fontsize=15)
+                        plt.tick_params(axis='both', which='major', labelsize=15)
+                        ax.text(2.5, 3, '# of peaks = 0', fontsize=15)
+                        plt.legend(loc="upper right", prop={'size': 15})
                         if save:
                             fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                            fig.savefig('Results\Fd_find_peaks_' + str(k) + '.pdf', format='pdf')
                         plt.close()
             else:
                 first_peak_list.append(None)
@@ -202,13 +208,16 @@ def findPeaks(F, d, contact_point_list, prominence=0.2, plot=False, save=False):
                 right_bases_list.append([])
                 if plot:
                     fig, ax = plt.subplots()
-                    ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', label='contact point estimation')
-                    ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
-                    ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-                    ax.text(2.5, 3, '# of peaks = 0', fontsize=12)
-                    plt.legend(loc="upper right")
+                    ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve', linewidth=4)
+                    ax.plot(d[k][0][contact_point_list[k]], F[k][0][contact_point_list[k]], 'ro', markersize=8, label='contact point estimation')
+                    ax.set_xlabel(u'Distance (\u03bcm)', fontsize=15)
+                    ax.set_ylabel('Force (nN)', fontsize=15)
+                    ax.text(2.5, 3, '# of peaks = 0', fontsize=15)
+                    plt.tick_params(axis='both', which='major', labelsize=15)
+                    plt.legend(loc="upper right", prop={'size': 15})
                     if save:
                         fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                        fig.savefig('Results\Fd_find_peaks_' + str(k) + '.pdf', format='pdf')
                     plt.close()
         else:
             first_peak_list.append(None)
@@ -219,11 +228,13 @@ def findPeaks(F, d, contact_point_list, prominence=0.2, plot=False, save=False):
             if plot:
                 fig, ax = plt.subplots()
                 ax.plot(0, 0, 'deepskyblue')
-                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i has no extend curve' % k)
+                ax.set(xlabel=u'Distance (\u03bcm)', ylabel='Force (nN)', title='Force-distance curve %i has no extend curve' % k)
                 plt.xlim(0,6)
                 plt.ylim(0,6)
+                plt.tick_params(axis='both', which='major', labelsize=15)
                 if save:
                     fig.savefig('Results\Fd_find_peaks_' + str(k) + '.png')
+                    fig.savefig('Results\Fd_find_peaks_' + str(k) + '.pdf', format='pdf')
                 plt.close()
                 
     return first_peak_list, number_of_peaks_list, all_peaks_list, peak_heights_list, right_bases_list
@@ -264,7 +275,7 @@ def forceDrop(F, d, first_peak_list,peak_heights_list, right_bases_list, plot=Tr
         first_force_drop_list.append(first_force_drop)
         
         if first_peak_list[k]:
-            limit = 100
+            limit = 500
             
             lower_x_lim = indx_list[0] - limit
             lower_y_lim = indx_list[0] - limit
@@ -278,17 +289,20 @@ def forceDrop(F, d, first_peak_list,peak_heights_list, right_bases_list, plot=Tr
                 upper_x_lim = len(d[k][0]) - 1
                 upper_y_lim = upper_x_lim
             
-            if plot:
+            if plot and k == 6:
                 fig, ax = plt.subplots()
-                ax.plot(d[k][0][first_peak_list[k]], F[k][0][first_peak_list[k]], 'bo', label='first peak')
-                ax.plot(d[k][0][indx_list[0]], F[k][0][indx_list[0]], 'yo', label='base of peak')
-                ax.plot(d[k][0], F[k][0], 'deepskyblue', label='force-distance curve')
-                ax.set(xlabel='distance (um)', ylabel='force (nN)', title='Force-distance curve %i' % k)
-                ax.text(d[k][0][lower_x_lim], F[k][0][lower_y_lim], 'Force drop = %.3f' % first_force_drop, fontsize=12)
+                ax.plot(d[k][0], F[k][0], 'deepskyblue', linewidth=4, label='force-distance curve')
+                ax.plot(d[k][0][first_peak_list[k]], F[k][0][first_peak_list[k]], 'bo', markersize=8, label='first peak')
+                ax.plot(d[k][0][indx_list[0]], F[k][0][indx_list[0]], 'yo', markersize=8, label='base of peak')
+                ax.set_xlabel(u'Distance (\u03bcm)', fontsize=15)
+                ax.set_ylabel('Force (nN)', fontsize=15)
+                ax.text(d[k][0][lower_x_lim], F[k][0][lower_y_lim], 'Force drop = %.3f' % first_force_drop, fontsize=15)
                 plt.xlim(d[k][0][lower_x_lim], d[k][0][upper_x_lim])
                 plt.ylim(F[k][0][lower_y_lim], F[k][0][upper_y_lim])
-                plt.legend(loc="upper left")
+                # plt.legend(loc="upper left", prop={'size': 12})
+                plt.tick_params(axis='both', which='major', labelsize=15)
                 fig.savefig('Results\Fd_first_force_drop_' + str(k) + '.png')
+                fig.savefig('Results\Fd_first_force_drop_' + str(k) + '.pdf', format='pdf')
                 plt.close()  
     return penetration_force_list, first_penetration_force_list, right_bases_list2, force_drop_list, first_force_drop_list
 
