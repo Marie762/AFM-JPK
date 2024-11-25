@@ -34,7 +34,7 @@ def baselineSubtraction2(F):
     F_bS = []
     for k in range(len(F)):
         F_bS_local = []
-        slice_top = round((10/100)*len(F[k][0]))
+        slice_top = round((50/100)*len(F[k][0]))
         min_value = np.ndarray.min(F[k][0][:slice_top])
         F_bS_local.append(F[k][0] - min_value)
         F_bS_local.append(F[k][1] - min_value)

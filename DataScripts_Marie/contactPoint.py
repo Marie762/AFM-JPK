@@ -364,7 +364,7 @@ def contactPoint_RoV(F,D, plot=True):
 
     return contact_point_list
 
-def contactPoint_derivative(F, D, N=600, threshold1=2.5, threshold2=0.05, plot=True):
+def contactPoint_derivative(F, D, N=600, threshold1=2, threshold2=0.05, plot=True):
     contact_point_list = []
     N = N
     offset = N

@@ -14,7 +14,7 @@ import pickle
 import sys
 from matplotlib import cm
 from extractJPK import QI, force
-from procBasic import baselineSubtraction, heightCorrection, heightCorrection2, heightZeroAtContactPoint, sensitivityCorrection, tipDisplacement, smoothingSG
+from procBasic import baselineSubtraction, baselineSubtraction2, heightCorrection, heightCorrection2, heightZeroAtContactPoint, sensitivityCorrection, tipDisplacement, smoothingSG
 from plot import Fd, Fd1, FdGrid_Emodulus, FdGrid_ForceDrop, FdGrid_Height, FdGrid_Indentation, FdGrid_Peaks, FdGrid_PenetrationForce, Fdsubplot, QIMap
 from contactPoint import QIcontactPoint3, contactPoint1, contactPoint2, QIcontactPoint1, QIcontactPoint2, contactPoint_RoV, contactPoint_piecewise_regression, contactPoint_ruptures, contactPoint3, contactPoint_evaluation, contactPoint_derivative
 from metadata import Sensitivity, SpringConstant, Position, Speed, Setpoint
@@ -26,8 +26,8 @@ from penetrationPoint import forceDrop, indentationDepth, substrateContact, find
 start_time = time.time()
 
 ###### Fd ###############################################################################
-k = 2 # grid number
-date = '2024.07.23_' # experiment date
+k = 1 # grid number
+date = '2024.07.18_' # experiment date
 
 # Extract the force spectroscopy data from all the jpk-force files in the directory 'Data'
 print('Loading force spectroscopy data')
@@ -44,14 +44,14 @@ insertion_velocity = velocity_list[0][0]
 print('insertion velocity', insertion_velocity)
 
 # # # # Make a sensitivity correction if necessary
-print('Sensitivity correction')
-new_sensitivity = 100*10**(-9)
-F = sensitivityCorrection(F, new_sensitivity)
-print(f'Done {time.time() - start_time:.2f} seconds')
+# print('Sensitivity correction')
+# new_sensitivity = 100*10**(-9)
+# F = sensitivityCorrection(F, new_sensitivity)
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
 # # # # Height and baseline corrections
 print('Height and baseline corrections')
-F_bS = baselineSubtraction(F)
+F_bS = baselineSubtraction2(F)
 d_hC = heightCorrection2(d)
 print(f'Done {time.time() - start_time:.2f} seconds')
 
@@ -66,13 +66,12 @@ print(f'Done {time.time() - start_time:.2f} seconds')
 # fig = Fd(F_bS, delta_hC, save=True) 
 # print(f'Done {time.time() - start_time:.2f} seconds')
 
-
 # # # # Find and store contact point list
 print('Finding contact points')
 data_path = r'StoredValues/' 
 load_from_pickle=True
 if not load_from_pickle:  
-    contact_point_list = contactPoint_derivative(F_bS, delta_hC, N=600, threshold1=1, threshold2=0.06, plot=True)
+    contact_point_list = contactPoint_derivative(F_bS, delta_hC, N=600, threshold1=2, threshold2=0.05, plot=True)
     with open(data_path + '/contactPoint_derivative_'+ date + 'grid_' + str(k) + '.pkl', "wb") as output_file:
         pickle.dump(contact_point_list, output_file)
 else:
@@ -95,89 +94,90 @@ for n in range(len(d_hC)):
         contact_point_height.append(0)
 print(f'Done {time.time() - start_time:.2f} seconds')
 
-# # # # find insertion points
-print('Finding the insertion points')
-first_peak_list, number_of_peaks_list, all_peaks_list, peak_heights_list, right_bases_list = findPeaks(F_bS, delta_hC, contact_point_list, prominence=0.000000001, plot=True, save=True) # , plot=True, save=True
-print(f'Done {time.time() - start_time:.2f} seconds')
+# # # # # find insertion points
+# print('Finding the insertion points')
+# first_peak_list, number_of_peaks_list, all_peaks_list, peak_heights_list, right_bases_list = findPeaks(F_bS, delta_hC, contact_point_list, prominence=0.000000001, plot=True, save=True) # , plot=True, save=True
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-# # # # find insertion force and force drop
-print('Finding the force drop and insertion force')
-penetration_force_list, first_penetration_force_list, right_bases_list, force_drop_list, first_force_drop_list = forceDrop(F_bS, delta_hC, first_peak_list, peak_heights_list, right_bases_list, plot=True)
-print(f'Done {time.time() - start_time:.2f} seconds')
+# # # # # find insertion force and force drop
+# print('Finding the force drop and insertion force')
+# penetration_force_list, first_penetration_force_list, right_bases_list, force_drop_list, first_force_drop_list = forceDrop(F_bS, delta_hC, first_peak_list, peak_heights_list, right_bases_list, plot=True)
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-# # # # find indentation depth
-print('Finding the indentation depth')
-indentation_depth_arr = indentationDepth(F_bS, delta_hC, contact_point_list, first_peak_list)
-print(f'Done {time.time() - start_time:.2f} seconds')
+# # # # # find indentation depth
+# print('Finding the indentation depth')
+# indentation_depth_arr = indentationDepth(F_bS, delta_hC, contact_point_list, first_peak_list)
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-# # # # find contact point with hard substrate
-print('Finding the contact point with the hard substrate')
-substrate_contact_list = substrateContact(F_bS, delta_hC, contact_point_list)
-print(f'Done {time.time() - start_time:.2f} seconds')
+# # # # # find contact point with hard substrate
+# print('Finding the contact point with the hard substrate')
+# substrate_contact_list = substrateContact(F_bS, delta_hC, contact_point_list)
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-# # # # find elastic modulus
-print('Finding the elastic modulus')
-delta_hZ = heightZeroAtContactPoint(delta_hC, contact_point_list)
-E_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
-print(f'Done {time.time() - start_time:.2f} seconds')
+# # # # # find elastic modulus
+# print('Finding the elastic modulus')
+# delta_hZ = heightZeroAtContactPoint(delta_hC, contact_point_list)
+# E_list, fig = fitYoungsModulus(F_bS, delta_hZ, contact_point_list, substrate_contact_list, first_peak_list, plot=True, save=True) # indenter='parabolic', 'conical', or 'pyramidal'
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
 
-# # # # storing complete data in dataframe and pickle
-print('Storing complete data in dataframe')
-index_list = range(0, len(F))
-data = {'index': index_list, 
-        'contact point': contact_point_list, 
-        'substrate contact': substrate_contact_list,
-        'height': contact_point_height, 
-        'first peak': first_peak_list, 
-        'number of peaks': number_of_peaks_list, 
-        'insertion force': first_penetration_force_list, 
-        'force drop': first_force_drop_list, 
-        'indentation depth': indentation_depth_arr,
-        'E modulus': E_list,
-        'spring constant': spring_constant,
-        'tip diameter': tip_diameter,
-        'insertion velocity': insertion_velocity} 
-data_frame = pd.DataFrame(data) 
+# # # # # storing complete data in dataframe and pickle
+# print('Storing complete data in dataframe')
+# index_list = range(0, len(F))
+# data = {'index': index_list, 
+#         'contact point': contact_point_list, 
+#         'substrate contact': substrate_contact_list,
+#         'height': contact_point_height, 
+#         'first peak': first_peak_list, 
+#         'number of peaks': number_of_peaks_list, 
+#         'insertion force': first_penetration_force_list, 
+#         'force drop': first_force_drop_list, 
+#         'indentation depth': indentation_depth_arr,
+#         'E modulus': E_list,
+#         'spring constant': spring_constant,
+#         'tip diameter': tip_diameter,
+#         'insertion velocity': insertion_velocity} 
+# data_frame = pd.DataFrame(data) 
 
-# Save DataFrame to csv file 
-data_frame.to_csv('Results\Complete_data_' + date + 'grid_' + str(k) + '.csv', index=False, encoding='utf-8')
+# # Save DataFrame to csv file 
+# data_frame.to_csv('Results\Complete_data_' + date + 'grid_' + str(k) + '.csv', index=False, encoding='utf-8')
 
-with open(data_path + '/Complete_data_'+ date + 'grid_' + str(k) + '.pkl', "wb") as output_file:
-    pickle.dump(data_frame, output_file)
-print(f'Done {time.time() - start_time:.2f} seconds')
+# with open(data_path + '/Complete_data_'+ date + 'grid_' + str(k) + '.pkl', "wb") as output_file:
+#     pickle.dump(data_frame, output_file)
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
 
 # # # # create grid plots
-print('Creating grid plot of height data')
-grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
-fig = FdGrid_Height(grid_data,x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
-print(f'Done {time.time() - start_time:.2f} seconds')
+# print('Creating grid plot of height data')
+# grid_data, x_and_y_data = grid15x15(contact_point_height) # x_and_y_data        x_data, y_data
+# fig = FdGrid_Height(grid_data,x_and_y_data, x_and_y_data, k, save='True', name='Height (um) ') # x_and_y_data, x_and_y_data
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-print('Creating grid plot of number of insertion points data')
-grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
-fig = FdGrid_Peaks(grid_data,x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
-print(f'Done {time.time() - start_time:.2f} seconds')
 
-print('Creating grid plot of penetration force data')
-grid_data, x_and_y_data = grid15x15(first_penetration_force_list) 
-fig = FdGrid_PenetrationForce(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Penetration force of 1st peak ')
-print(f'Done {time.time() - start_time:.2f} seconds')
+# print('Creating grid plot of number of insertion points data')
+# grid_data, x_and_y_data = grid15x15(number_of_peaks_list) 
+# fig = FdGrid_Peaks(grid_data,x_and_y_data, x_and_y_data, k, save='True', name='Number of peaks ')
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-print('Creating grid plot of force drop data')
-grid_data,x_and_y_data = grid15x15(first_force_drop_list) 
-fig = FdGrid_ForceDrop(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Force drop of 1st peak ') # set NaN values to zero
-print(f'Done {time.time() - start_time:.2f} seconds')
+# print('Creating grid plot of penetration force data')
+# grid_data, x_and_y_data = grid15x15(first_penetration_force_list) 
+# fig = FdGrid_PenetrationForce(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Penetration force of 1st peak ')
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-print('Creating grid plot of indentation depth data')
-grid_data, x_and_y_data = grid15x15(indentation_depth_arr) 
-fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ') 
-print(f'Done {time.time() - start_time:.2f} seconds')
+# print('Creating grid plot of force drop data')
+# grid_data,x_and_y_data = grid15x15(first_force_drop_list) 
+# fig = FdGrid_ForceDrop(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Force drop of 1st peak ') # set NaN values to zero
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
-print('Creating grid plot of E modulus data')
-grid_data, x_and_y_data = grid15x15(E_list)
-fig = FdGrid_Emodulus(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Youngs modulus (kPa) ')
-print(f'Done {time.time() - start_time:.2f} seconds')
+# print('Creating grid plot of indentation depth data')
+# grid_data, x_and_y_data = grid15x15(indentation_depth_arr) 
+# fig = FdGrid_Indentation(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Indentation depth (um) ') 
+# print(f'Done {time.time() - start_time:.2f} seconds')
+
+# print('Creating grid plot of E modulus data')
+# grid_data, x_and_y_data = grid15x15(E_list)
+# fig = FdGrid_Emodulus(grid_data, x_and_y_data, x_and_y_data, k, save='True', name='Youngs modulus (kPa) ')
+# print(f'Done {time.time() - start_time:.2f} seconds')
 
 x_position_list, y_position_list = Position()
 
@@ -190,7 +190,7 @@ surface = ax.plot_surface(x_data, y_data, np.array(height_data), rcount=100, cco
 ax.set_zlim3d(bottom=0, top=5)
 plt.locator_params(axis='z', nbins=1) 
 ax.set_aspect('equal', adjustable='box') # adjustable='box'
-fig.colorbar(surface, shrink=0.7, aspect=20, location='right', label='Cell height (um)')
+fig.colorbar(surface, shrink=0.7, aspect=15, location='right', label='Cell height (um)')
 ax.set_xlabel(u'x (\u03bcm)', fontsize=15)
 ax.set_ylabel(u'y (\u03bcm)', fontsize=15)
 plt.tick_params(axis='both', which='major', labelsize=15)

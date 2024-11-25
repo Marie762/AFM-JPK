@@ -11,20 +11,22 @@ import pandas as pd
 def Fd(F, d, save=False):
     for k in range(len(F)):
         fig, ax = plt.subplots()
-        ax.plot(d[k][1], F[k][1], 'orange', linewidth=4, label='Retract curve')
-        ax.plot(d[k][0], F[k][0], 'deepskyblue', linewidth=4, label='Extend curve')
+        print(len(F[k][0]))
+        # ax.plot(d[k][1], F[k][1], 'orange', linewidth=1, label='Retract curve')
+        ax.plot(d[k][0], F[k][0], 'deepskyblue', linewidth=3, label='Extend curve')
         if len(F[k]) > 2:
             ax.plot(d[k][2], F[k][2], 'mediumorchid')
-        ax.set_xlabel(u'Distance (\u03bcm)', fontsize=15)
+        ax.set_xlabel(u'Tip-sample separation (\u03bcm)', fontsize=15)
         ax.set_ylabel('Force (nN)', fontsize=15)
-        plt.legend(loc="upper right", prop={'size': 15})
+        # plt.legend(loc="upper right", prop={'size': 15})
         ax.minorticks_on()
+        plt.xlim(-0.2,4)
+        # plt.ylim(-0.2,5.2)
         plt.tick_params(axis='both', which='major', labelsize=15)
+        plt.subplots_adjust(left=0.15, bottom=0.15)
         # ax.grid(visible=True, which='both', axis='x', color='k', linestyle='-')
         if save:
-            fig.savefig('Results\Fd_' + str(k) + '.png')
-        if k ==0:
-            fig.savefig('Results\Fd_' + str(k) + '.pdf', format='pdf')
+            fig.savefig('Results\Fd_' + str(k) + '.png',dpi=600)
         plt.close()
     return 
 

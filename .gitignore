@@ -5,3 +5,12 @@ Results_metadata/*
 StoredValues/*
 Data_csv/*
 .venv
+DataScripts_Marie/MultiLR.py
+DataScripts_Marie/MultiLR2.py
+DataScripts_Marie/Histograms.py
+DataScripts_Marie/tornado_plot.py
+DataScripts_Marie/EffectEmodulus.py
+DataScripts_Marie/EffectHeight.py
+DataScripts_Marie/EffectSpringConstant.py
+DataScripts_Marie/EffectTipDiameter.py
+DataScripts_Marie/EffectVelocity.py
