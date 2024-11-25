@@ -2,7 +2,7 @@ Data/*
 Data_QI/*
 Results/*
 Results_metadata/*
-StoredValues/*
+StoredValues
 Data_csv/*
 .venv
 DataScripts_Marie/MultiLR.py
